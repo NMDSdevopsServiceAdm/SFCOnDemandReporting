@@ -1,0 +1,61 @@
+{
+  "name": "SfC_On-Demand_Reporting_Microservices",
+  "version": "1.0.0",
+  "description": "A set of lambda for generating on-demand, prescribed reports against the SfC API",
+  "main": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NMDSdevopsServiceAdm/SFCOnDemandReporting.git"
+  },
+  "scripts": {
+    "build": "cross-env NODE_ENV=production webpack --config webpack.config.js --mode production",
+    "dev": "cross-env NODE_ENV=development webpack --config webpack.config.js --watch --mode development",
+    "lint": "eslint --ext .js ./src ./test",
+    "start": "webpack-dev-server --hot --inline --mode development --port 3000",
+    "test": "jest",
+    "coverage": "jest --coverage",
+    "package:dev": "npm run-script build && cd lib && sls package -v --stage dev",
+    "package:test": "npm run-script build && cd lib && sls package -v --stage test",
+    "package:prod": "npm run-script build && cd lib && sls package -v --stage prod",
+    "deploy:dev": "npm run-script build && cd lib && sls deploy -v --stage dev",
+    "deploy:test": "npm run-script build && cd lib && sls deploy -v --stage test",
+    "deploy:prod": "npm run-script build && cd lib && sls deploy -v --stage prod",
+    "remove:dev": "cd lib && sls remove -v --stage dev",
+    "remove:test": "cd lib && sls remove -v --stage test",
+    "remove:prod": "cd lib && sls remove -v --stage prod"
+  },
+  "author": "Warren Ayling",
+  "license": "ISC",
+  "dependencies": {
+    "assert": "^1.4.1",
+    "axios": "^0.18.0",
+    "dateformat": "^3.0.3",
+    "jsonwebtoken": "^8.5.1",
+    "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.362.0",
+    "babel": "^6.23.0",
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-eslint": "^10.0.1",
+    "babel-jest": "^23.6.0",
+    "babel-loader": "^7.1.5",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "copy-webpack-plugin": "^4.5.4",
+    "cross-env": "^5.2.0",
+    "eslint": "^5.8.0",
+    "eslint-config-prettier": "^3.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jest": "^21.26.2",
+    "eslint-plugin-wyze": "^3.4.0",
+    "jest": "^23.6.0",
+    "serverless": "^1.40.0",
+    "serverless-plugin-include-dependencies": "^3.1.1",
+    "serverless-pseudo-parameters": "^2.2.0",
+    "webpack": "^4.23.1",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.2.1"
+  }
+}
