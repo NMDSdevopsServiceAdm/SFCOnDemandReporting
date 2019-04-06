@@ -1,4 +1,4 @@
-service: wozitech-alexa-skills
+service: sfc-ondemand-reports
 
 custom:
   environment: ${opt:stage, 'development'}
@@ -17,7 +17,7 @@ provider:
   environment:
     LOG_LEVEL: 1      # 0-disabled; 1-errors, 2-warnings, 3-info, 4-debug, 5-trace
     SLACK_LEVEL: 1          # 0-disabled; 1-errors, 2-warnings, 3-info, 4-debug, 5-trace
-  role: arn:aws:iam::#{AWS::AccountId}:role/WOZiTech_eu_west_1_lambda_basic_role
+  role: arn:aws:iam::#{AWS::AccountId}:role/SfC_eu_west_1_ondemand_reporting
 
 package:
   individually: true
@@ -27,22 +27,20 @@ package:
     - .git/**
 
 functions:
-  myBuses:
-    handler: myBuses.handler
+  snppshotReport:
+    handler: snapshotReport.handler
     environment:
-      TFL_API_SECRET_ID: 'TFL_API_Portal'
+      SFC_API_ENDPOINT: 'https://sfcdev.cloudapps.digital/api'
       LOG_LEVEL: 3      # 0-disabled; 1-errors, 2-warnings, 3-info, 4-debug, 5-trace
-      SLACK_WEBHOOK: 'SLACK_MY_BUSES'
-      SLACK_LEVEL: 5          # 0-disabled; 1-errors, 2-warnings, 3-info, 4-debug, 5-trace
-    role: arn:aws:iam::#{AWS::AccountId}:role/WOZiTech_eu_west_1_tfl_lambda_role    # note, the name of the role includes the region, but with underscores
-    events:
-      - alexaSkill: amzn1.ask.skill.2ba78764-0a67-481f-907a-3f7c08287aeb
+      SLACK_WEBHOOK: 'SLACK_URL'
+      SLACK_LEVEL: 0          # 0-disabled; 1-errors, 2-warnings, 3-info, 4-debug, 5-trace
+    role: arn:aws:iam::#{AWS::AccountId}:role/SfC_eu_west_1_ondemand_reporting    # note, the name of the role includes the region, but with underscores
     tags:
-      application: "wit-home"
-      company: "WOZiTech"
+      application: "On-Demand Reporting"
+      company: "SfC"
     package:
       include:
-        - myBuses.js
+        - snapshotReport.js
 
 plugins:
   - serverless-pseudo-parameters
