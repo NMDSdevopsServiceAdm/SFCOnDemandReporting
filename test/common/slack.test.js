@@ -1,5 +1,5 @@
 import * as MySecrets from '../../src/aws/secrets';
-import { slackInfo, slackTrace, slackWarn, slackError, slackRequest } from '../../src/common/slack';
+import { slackInfo, slackTrace, slackWarn, slackError } from '../../src/common/slack';
 import * as MyLogger from '../../src/common/logger';
 import axios from 'axios';
 
@@ -22,7 +22,6 @@ const logErrorMock = jest.fn();
 MyLogger.logError = jest.fn();
 
 const slackToAll = async () => {
-    await slackRequest("My request", { one: true }, { two: false});
     await slackError("My Error", "one", { two: false});
     await slackWarn("My Warning", "one");
     await slackInfo("My Info", "one", { two: false}, "three");
@@ -133,7 +132,7 @@ describe('Info only', async () => {
 
     it ('should log up to info only', async () => {
         await slackToAll();
-        expect(axios.post).toHaveBeenCalledTimes(4);
+        expect(axios.post).toHaveBeenCalledTimes(3);
     });
     it ('should log up to info only, with just title, no args', async () => {
         await slackInfo("just title");
@@ -152,7 +151,7 @@ describe('Debug only', () => {
 
     it ('should log up to debug', async () => {
         await slackToAll();
-        expect(axios.post).toHaveBeenCalledTimes(4);
+        expect(axios.post).toHaveBeenCalledTimes(3);
     });
     // Note - no SlackDebug to test
 });
@@ -168,7 +167,7 @@ describe('Trace (ALL)', () => {
 
     it ('should log all', async () => {
         await slackToAll();
-        expect(axios.post).toHaveBeenCalledTimes(5);
+        expect(axios.post).toHaveBeenCalledTimes(4);
     });
     it ('should log up to trace, with just title, no args', async () => {
         await slackTrace("just title");
