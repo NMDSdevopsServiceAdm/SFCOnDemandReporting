@@ -17,7 +17,7 @@ provider:
   environment:
     LOG_LEVEL: 1      # 0-disabled; 1-errors, 2-warnings, 3-info, 4-debug, 5-trace
     SLACK_LEVEL: 1          # 0-disabled; 1-errors, 2-warnings, 3-info, 4-debug, 5-trace
-  role: arn:aws:iam::#{AWS::AccountId}:role/SfC_eu_west_1_ondemand_reporting
+  role: arn:aws:iam::#{AWS::AccountId}:role/Ssfc-dev-lambda 
 
 package:
   individually: true
@@ -27,21 +27,34 @@ package:
     - .git/**
 
 functions:
-  snppshotReport:
+  snapshotReport:
     handler: snapshotReport.handler
     environment:
       SFC_API_ENDPOINT: 'https://sfcdev.cloudapps.digital/api'
       LOG_LEVEL: 3      # 0-disabled; 1-errors, 2-warnings, 3-info, 4-debug, 5-trace
       SLACK_WEBHOOK: 'SLACK_URL'
       SLACK_LEVEL: 0          # 0-disabled; 1-errors, 2-warnings, 3-info, 4-debug, 5-trace
-    role: arn:aws:iam::#{AWS::AccountId}:role/SfC_eu_west_1_ondemand_reporting    # note, the name of the role includes the region, but with underscores
+    role: arn:aws:iam::#{AWS::AccountId}:role/sfc-dev-lambda     # note, the name of the role includes the region, but with underscores
     tags:
       application: "On-Demand Reporting"
       company: "SfC"
     package:
       include:
         - snapshotReport.js
-
+  ingestEstablishments:
+    handler: ingestEstablishment.handler
+    environment:
+      STREAM: 'establishments.dev'
+      LOG_LEVEL: 3      # 0-disabled; 1-errors, 2-warnings, 3-info, 4-debug, 5-trace
+      SLACK_WEBHOOK: 'SLACK_URL'
+      SLACK_LEVEL: 0          # 0-disabled; 1-errors, 2-warnings, 3-info, 4-debug, 5-trace
+    role: arn:aws:iam::#{AWS::AccountId}:role/sfc-dev-lambda     # note, the name of the role includes the region, but with underscores
+    tags:
+      application: "Pump"
+      company: "SfC"
+    package:
+      include:
+        - ingestEstablishments.js
 plugins:
   - serverless-pseudo-parameters
   - serverless-plugin-include-dependencies

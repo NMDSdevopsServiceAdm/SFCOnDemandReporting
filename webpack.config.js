@@ -6,7 +6,8 @@ if (process.env.NODE_ENV === 'production') externals.push('aws-sdk');
 
  const lambdaFunctions = {
   entry: {
-    snapshotReport: ['babel-polyfill', './src/api/snapshotReport.js']
+    snapshotReport: ['babel-polyfill', './src/api/snapshotReport.js'],
+    ingestEstablishments: ['babel-polyfill', './src/api/ingestEstablishments.js'],
   },
   output: {
     path: path.resolve(__dirname, './lib'),
