@@ -32,3 +32,7 @@ sensitive information including username and password are not stored.
 Run: `MONGO_DB_URI='mongodb+srv://<db username>:<db password>@<db host>/<db name>' npm run package:dev`:
 * Note, the uri is contained within single quotes.
 * The `MONGO_DB_URI` is the environment variable name.
+
+## MongoDB Whitelist
+Connecting from lambda, need to add the region's CIDR to the MongoDB Atlas IP whitelist. Refer to https://aws.amazon.com/blogs/aws/aws-ip-ranges-json/
+for informatin on how to request the AWS regional IP addresses.
