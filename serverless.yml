@@ -41,7 +41,7 @@ functions:
     package:
       include:
         - snapshotReport.js
-  ingestEstablishments:
+  establishmentsIngest:
     handler: ingestEstablishments.handler
     environment:
       STREAM: 'establishments.dev'
@@ -54,6 +54,8 @@ functions:
       - stream:
           type: kinesis
           arn:  arn:aws:kinesis:#{AWS::Region}:#{AWS::AccountId}:stream/establishments.dev
+          batchSize: 100
+          startingPosition: LATEST
     tags:
       application: "Pump"
       company: "SfC"
