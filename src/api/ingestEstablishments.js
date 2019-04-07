@@ -85,9 +85,7 @@ export const handler = async (event, context) => {
   logInfo(slackTitle, "All establishments: ", establishmentKeys.length);
 
   // now having a unique set of Establishments, can upsert them into Mongo collection
-  const mongoDbUsername = 'aylingw';
-  const mongoDbPassword = 'gIvPHCA4belrszVv';
-  const mongoDbUrl = process.env.MONGO_DB_URI || `mongodb+srv://${mongoDbUsername}:${mongoDbPassword}@demo-iwrhu.mongodb.net/test`;
+  const mongoDbUrl = process.env.MONGO_DB_URI;
 
   try {
     const dbClient = await MongoClient.connect(mongoDbUrl, { useNewUrlParser: true });
@@ -97,7 +95,7 @@ export const handler = async (event, context) => {
 
     establishmentKeys.forEach(thisEstUID => {
       upsertPromises.push(
-        db.collection('Establishments').update(
+        db.collection('establishments').update(
           { uid: thisEstUID },
           establishments[thisEstUID],
           {
