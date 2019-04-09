@@ -7,10 +7,6 @@ const runReport = async () => {
         const returnVal = await myReport.handler(
             {},
             { invokedFunctionArn : 'arn:aws:lambda:eu-west-1:accountid:function:sfc-ondemand-reporting-snapshot-report' },
-            (err, data) => {
-                if (err) console.error(err);
-                console.log("LOCAL: My results: ", data);
-            }
         );
         console.log("Handler returned: ", returnVal);
     } catch (err) {
