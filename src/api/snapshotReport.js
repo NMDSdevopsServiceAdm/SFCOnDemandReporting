@@ -9,7 +9,7 @@ import { initialiseSecrets } from '../aws/secrets';
 import { v4 as uuidv4 } from 'uuid';
 
 const FETCH_ESTABLISHMENTS_API = false;
-const ESTABLISHMENT_IDS = [30];
+const ESTABLISHMENT_IDS = [30, 63];
 
 export const handler = async (event, context, callback) => {
   const arnList = (context.invokedFunctionArn).split(":");
