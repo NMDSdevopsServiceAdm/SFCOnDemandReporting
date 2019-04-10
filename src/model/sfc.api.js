@@ -10,8 +10,8 @@ const isLocalhostRegex = /^localhost$/;
 export const allEstablishments = async (since=null) => {
     const SFC_API_ENDPOINT = isLocalhostRegex.test(process.env.SFC_HOST)
                                 ? 'http://localhost:3000/api'
-                                :  `https://${process.env.SFC_API_ENDPOINT}/api`;
-    const SFC_GET_ALL_ESTABLISHMENTS = `${SFC_API_ENDPOINT}/establishment`;
+                                :  `https://${process.env.SFC_HOST}/api`;
+    const SFC_GET_ALL_ESTABLISHMENTS = `${SFC_API_ENDPOINT}/reports/dailySnapshot`;
     const apiUrl = since
         ? `${SFC_GET_ALL_ESTABLISHMENTS}/since?${since.toISOString()}`
         : `${SFC_GET_ALL_ESTABLISHMENTS}`;
@@ -33,27 +33,17 @@ export const allEstablishments = async (since=null) => {
         });
         logTrace("sfc.api::allEstablishments API Response", apiResponse);
 
-        const allEstablishments = [];
-        let totalNumberOfEstablishments = 0;
-        if ([200,201].includes(apiResponse.status) && typeof apiResponse.data !== 'undefined') {
-            totalNumberOfEstablishments = apiResponse.data.count;
-
-            apiResponse.data.establishments.forEach(thisEstablishment => {
-                allEstablishments.push(thisEstablishment)
-            });
-        }
-
         const response = {
             endpoint: apiUrl,
             status: apiResponse.status,
-            count: totalNumberOfEstablishments,
-            establishments: allEstablishments
+            establishments: apiResponse.data
         };
         logDebug("sfc.api::allEstablishments to return", response);
 
         return response;
 
     } catch (err) {
+        console.error(err)
         return {
             endpoint: apiUrl,
             status: err.response && err.response.status ? err.response.status : -1,
@@ -71,7 +61,7 @@ const reportingJWT = () => {
     }
 
     // 15 minute token
-    return jwt.sign(JSON.parse(JSON.stringify(claims)), jwtSecret, {expiresIn: '15m'});   
+    return jwt.sign(JSON.parse(JSON.stringify(claims)), jwtSecret(), {expiresIn: '15m'});   
 };
 
 const loginJWT = (establishmentId, establishmentUid) => {

@@ -2,8 +2,6 @@ const myReport = require('../../lib/snapshotReport');
 
 const runReport = async () => {
     try {
-        console.log("About to call Snapshot Report handler");
-
         const returnVal = await myReport.handler(
             {},
             { invokedFunctionArn : 'arn:aws:lambda:eu-west-1:accountid:function:sfc-ondemand-reporting-snapshot-report' },
@@ -14,8 +12,9 @@ const runReport = async () => {
     }
 }
 
-process.env.LOG_LEVEL = 5;
+process.env.LOG_LEVEL = 3;
 process.env.SLACK_LEVEL = 0;
-//process.env.STORE = 'dev/ondemand/reporting'
-process.env.SFC_HOST = 'localhost'
+process.env.SFC_HOST = 'sfcdev.cloudapps.digital';
+process.env.EMAIL_SENDER = 'warren.ayling@wozitech-ltd.co.uk';
+process.env.EMAIL_RECIPIENT = 'warren.ayling@wozitech-ltd.co.uk';
 runReport();

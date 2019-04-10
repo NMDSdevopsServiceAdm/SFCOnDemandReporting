@@ -4,6 +4,26 @@ custom:
   environment: ${opt:stage, 'development'}
   bucketName: "${self:custom.environment}-thisbucket"
   region: ${opt:region, 'eu-west-1'}
+  EMAIL_SENDER:
+    dev: warren.ayling@wozitech-ltd.co.uk
+    staging: warren.ayling@wozitech-ltd.co.uk
+    preprod: warren.ayling@wozitech-ltd.co.uk
+    prod: warren.ayling@wozitech-ltd.co.uk
+  EMAIL_RECIPIENT:
+    dev: warren.ayling@wozitech-ltd.co.uk
+    staging: warren.ayling@wozitech-ltd.co.uk
+    preprod: warren.ayling@wozitech-ltd.co.uk
+    prod: warren.ayling@wozitech-ltd.co.uk
+  STORE:
+    dev: "dev/ondemand/reporting"
+    staging: "staging/ondemand/reporting"
+    preprod: "preprod/ondemand/reporting"
+    prod: "prod/ondemand/reporting"
+  SFC_HOST:
+    dev: "sfcdev.cloudapps.digital"
+    staging: "sfcstaging.cloudapps.digital"
+    preprod: "sfcuat.cloudapps.digital"
+    prod: "asc-wds.skillsforcare.org.uk"
 
 provider:
   name: aws
@@ -17,8 +37,8 @@ provider:
   environment:
     LOG_LEVEL: 1      # 0-disabled; 1-errors, 2-warnings, 3-info, 4-debug, 5-trace
     SLACK_LEVEL: 1          # 0-disabled; 1-errors, 2-warnings, 3-info, 4-debug, 5-trace
-    STORE: "${self:provider.stage}/ondemand/reporting"
-  role: arn:aws:iam::#{AWS::AccountId}:role/sfc-dev-lambda 
+    STORE: "${self:custom.STORE.${self:provider.stage}}"
+  role: "arn:aws:iam::#{AWS::AccountId}:role/sfc-${self:provider.stage}-lambda"
 
 package:
   individually: true
@@ -30,12 +50,15 @@ package:
 functions:
   snapshotReport:
     handler: snapshotReport.handler
+    memorySize: 512
+    timeout: 15
     environment:
-      SFC_HOST: 'sfcdev.cloudapps.digital'
+      SFC_HOST: "${self:custom.SFC_HOST.${self:provider.stage}}"
       LOG_LEVEL: 3      # 0-disabled; 1-errors, 2-warnings, 3-info, 4-debug, 5-trace
-    role: arn:aws:iam::#{AWS::AccountId}:role/sfc-dev-lambda     # note, the name of the role includes the region, but with underscores
+      EMAIL_SENDER: "${self:custom.EMAIL_SENDER.${self:provider.stage}}"
+      EMAIL_RECIPIENT: "${self:custom.EMAIL_RECIPIENT.${self:provider.stage}}"
     tags:
-      application: "Pump"
+      application: "Reporting"
       function: "On Demand Reporting"
       company: "SfC"
     package:
@@ -43,11 +66,12 @@ functions:
         - snapshotReport.js
   establishmentsIngest:
     handler: ingestEstablishments.handler
+    memorySize: 128
+    timeout: 30
     environment:
       STREAM: 'establishments.dev'
       LOG_LEVEL: 3      # 0-disabled; 1-errors, 2-warnings, 3-info, 4-debug, 5-trace
-      MONGO_DB_URI: ${env:MONGO_DB_URI}
-    role: arn:aws:iam::#{AWS::AccountId}:role/sfc-dev-lambda     # note, the name of the role includes the region, but with underscores
+      #MONGO_DB_URI: ${env:MONGO_DB_URI}
     events:
       - stream:
           type: kinesis

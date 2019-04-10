@@ -2,6 +2,8 @@
 // Slack application integration allows not just for messaging, but well formatted messaging
 import util from 'util';
 import axios from 'axios';
+import FormData from 'form-data';
+import dateFormat from 'dateformat';
 import { logError, logWarn, logInfo, logTrace } from './logger';
 import { getSlackWebHookSecret } from '../aws/secrets';
 
@@ -136,4 +138,31 @@ export const slackTrace = async (title, ...theArgs) => {
             }
         ]
     });
+}
+
+// posts the given text content as a file
+//  - kinda works - it's missing scopes on the OAuth key
+export const uploadToSlack = async (slackMsg) => {
+    return;
+    try {
+        const now = new Date();
+        const generatedFilename = dateFormat(now, 'yyyy-mm-dd-hh-MM').concat('-dailySnapshot.csv');
+        
+        const form = new FormData();
+        form.append('token', 'oauth-token');
+        form.append('channels', 'target-channel-id');
+        form.append('content', slackMsg);
+        form.append('filename', generatedFilename);
+        form.append('title', 'Daily Snapshot Report');
+        form.append('filetype', 'csv');
+        const apiResponse = await axios.post('https://slack.com/api/files.upload', form, {
+            headers: form.getHeaders()
+        });
+
+        console.log("WA DEBUG - upload to Slack response: ", apiResponse.data);
+
+    } catch (err) {
+        // silently discard errors
+        logError("Failed to post to Slack: ", err);
+    }
 }

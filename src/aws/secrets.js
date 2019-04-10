@@ -9,7 +9,6 @@ export const initialiseSecrets = async (lambdaRegion) => {
   });
 
   const SECRETS_STORE = process.env.STORE || null;
-  console.log(`WA DEBUG - store env var (${SECRETS_STORE})`);
   if (SECRETS_STORE) {
     console.log('WA DEBUG - Retrieving secrets for: ', process.env.STORE);
     const mySecretsValue = await secrets.getSecretValue({SecretId: process.env.STORE}).promise();

@@ -1,15 +1,11 @@
 'use strict';
 
-import assert from 'assert';
-import { getSlackWebHookSecret } from '../aws/secrets';
 import { allEstablishments, thisEstablishment } from '../model/sfc.api';
 import { logInfo, logError, logWarn, logTrace } from '../common/logger';
-import { slackInfo, slackRequest, slackTrace, slackWarn, slackError } from '../common/slack';
+import { slackInfo, uploadToSlack, slackError } from '../common/slack';
 import { initialiseSecrets } from '../aws/secrets';
-import { v4 as uuidv4 } from 'uuid';
-
-const FETCH_ESTABLISHMENTS_API = false;
-const ESTABLISHMENT_IDS = [30, 479, 63];
+import { initialiseSES, sendByEmail } from '../aws/ses';
+import { dailySnapshotReportV1, dailySnapshotReportV2 } from '../reports/dailySnapshot';
 
 export const handler = async (event, context, callback) => {
   const arnList = (context.invokedFunctionArn).split(":");
@@ -18,32 +14,42 @@ export const handler = async (event, context, callback) => {
   const slackTitle = 'SfC Snapshot Report';
 
   await initialiseSecrets(lambdaRegion);
+  await initialiseSES(lambdaRegion);
 
   // slackTrace(slackTitle, event);
 
     let establishments = null;
     try {
-      if (FETCH_ESTABLISHMENTS_API) {
         logInfo("Fetching list of estabishments by API")
         establishments = await allEstablishments();
-        logInfo(slackTitle, "All establishments: ", establishments);
-      } else {
-        logInfo("Iterating list of estabishments by API: ", ESTABLISHMENT_IDS)
-        //const thisEstablishment = await thisEstablishment(30, uuidv4());
-        const allEstablishmentPromises = [];
-        ESTABLISHMENT_IDS.forEach(async thisEstablishmentId => {
-          const thisPromise = thisEstablishment(thisEstablishmentId, uuidv4());
 
-          allEstablishmentPromises.push(thisPromise);
-        });
+        let DataVersion = 'latest';
+        if (process.env.DATA_VERSION) {
+          DataVersion = parseInt(process.env.DATA_VERSION, 10);
+        }
+        
+        let csv = null
+        switch (DataVersion) {
+          case 1: 
+            csv = await dailySnapshotReportV1(establishments.establishments);
+            break;
 
-        await Promise.all(allEstablishmentPromises)
-          .then(allEstablishmentPromises => {
-            allEstablishmentPromises.forEach(thisEstablishment => {
-              logInfo(`Establishment: `, thisEstablishment);
-            });
-          });
-      }
+          default:
+            csv = await dailySnapshotReportV2(establishments.establishments);
+        }
+        
+        //console.log(csv);
+        await uploadToSlack(csv);
+
+        console.log("type of csv: ", typeof csv)
+
+        // send by email
+        const recipient = process.env.EMAIL_RECIPIENT;
+        const htmlMessage = `<pre>${csv.replace(/^(\s*\r\n){2,}/gm, '\r\n')}</pre>`;
+        const plainMessage = csv;
+        await sendByEmail(recipient, 'Daily Snapshot Report', htmlMessage, plainMessage);
+
+        console.log("WA DEBUG - CSV length: ", csv.length)
 
     } catch (err) {
       // unable to get establishments
@@ -60,7 +66,7 @@ export const handler = async (event, context, callback) => {
 
     // get this far with success and a set of next arrivals
     if (establishments && establishments.establishments) {
-      const responseMsg = `Successfully retrieved Establishments: #${establishments.count}`;
+      const responseMsg = `Successfully retrieved Establishments: #${establishments.establishments.count}`;
       logInfo(responseMsg);
       slackInfo(slackTitle, responseMsg);
 
