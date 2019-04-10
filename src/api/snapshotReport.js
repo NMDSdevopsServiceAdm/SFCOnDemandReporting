@@ -41,15 +41,13 @@ export const handler = async (event, context, callback) => {
         //console.log(csv);
         await uploadToSlack(csv);
 
-        console.log("type of csv: ", typeof csv)
-
         // send by email
         const recipient = process.env.EMAIL_RECIPIENT;
         const htmlMessage = `<pre>${csv.replace(/^(\s*\r\n){2,}/gm, '\r\n')}</pre>`;
         const plainMessage = csv;
         await sendByEmail(recipient, 'Daily Snapshot Report', htmlMessage, plainMessage);
 
-        console.log("WA DEBUG - CSV length: ", csv.length)
+        logInfo(`CSV length: ${csv.length} bytes`);
 
     } catch (err) {
       // unable to get establishments

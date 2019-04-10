@@ -8,12 +8,12 @@ custom:
     dev: warren.ayling@wozitech-ltd.co.uk
     staging: warren.ayling@wozitech-ltd.co.uk
     preprod: warren.ayling@wozitech-ltd.co.uk
-    prod: warren.ayling@wozitech-ltd.co.uk
+    prod: NMDSdevopsServiceAdm@hotmail.com
   EMAIL_RECIPIENT:
     dev: warren.ayling@wozitech-ltd.co.uk
     staging: warren.ayling@wozitech-ltd.co.uk
     preprod: warren.ayling@wozitech-ltd.co.uk
-    prod: warren.ayling@wozitech-ltd.co.uk
+    prod: david.griffiths@skillsforcare.org.uk
   STORE:
     dev: "dev/ondemand/reporting"
     staging: "staging/ondemand/reporting"
