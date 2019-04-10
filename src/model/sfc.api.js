@@ -3,12 +3,15 @@
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
 import { logDebug, logTrace } from '../common/logger';
+import { jwtSecret } from '../aws/secrets';
 
-const SFC_API_ENDPOINT = 'http://localhost:3000/api';
-const SFC_GET_ALL_ESTABLISHMENTS = `${SFC_API_ENDPOINT}/establishment`;
-const SFC_THIS_ESTABLISHMENTS = `${SFC_API_ENDPOINT}/establishment`;
+const isLocalhostRegex = /^localhost$/;
 
 export const allEstablishments = async (since=null) => {
+    const SFC_API_ENDPOINT = isLocalhostRegex.test(process.env.SFC_HOST)
+                                ? 'http://localhost:3000/api'
+                                :  `https://${process.env.SFC_API_ENDPOINT}/api`;
+    const SFC_GET_ALL_ESTABLISHMENTS = `${SFC_API_ENDPOINT}/establishment`;
     const apiUrl = since
         ? `${SFC_GET_ALL_ESTABLISHMENTS}/since?${since.toISOString()}`
         : `${SFC_GET_ALL_ESTABLISHMENTS}`;
@@ -17,8 +20,6 @@ export const allEstablishments = async (since=null) => {
         logTrace("sfc.api::allEstablishments - About to call upon SfC API with url", apiUrl);
         const myJwt = reportingJWT();
         const myParams= {};
-
-        console.log("WA DEBUG - my JWT: ", myJwt)
 
         if (since) {
             myParams.since = new Date(since);
@@ -62,12 +63,11 @@ export const allEstablishments = async (since=null) => {
 };
 
 const reportingJWT = () => {
-    const jwtSecret = 'nodeauthsecret';             // TODO - get from AWS Secrets Manager
     var claims = {
         role: 'reporting',
         sub: 'ondemand-reporting',
-        aud: 'ADS-WDS-on-demand-reporting',           // TODO - get from AWS Secrets Manager
-        iss: 'localhost',              // TODO - get from AWS Secrets Manager
+        aud: 'ADS-WDS-on-demand-reporting',
+        iss: process.env.SFC_HOST,
     }
 
     // 15 minute token
@@ -75,30 +75,31 @@ const reportingJWT = () => {
 };
 
 const loginJWT = (establishmentId, establishmentUid) => {
-    const jwtSecret = 'nodeauthsecret';             // TODO - get from AWS Secrets Manager
     var claims = {
         role: 'reporting',
         sub: 'ondemand-reporting',
-        aud: 'ADS-WDS',           // TODO - get from AWS Secrets Manager
-        iss: 'localhost',              // TODO - get from AWS Secrets Manager
+        aud: 'ADS-WDS',
+        iss: process.env.SFC_HOST,
         EstblishmentId: establishmentId,
         EstablishmentUID: establishmentUid,
     }
 
     // 15 minute token
-    return jwt.sign(JSON.parse(JSON.stringify(claims)), jwtSecret, {expiresIn: '15m'});   
+    return jwt.sign(JSON.parse(JSON.stringify(claims)), jwtSecret(), {expiresIn: '15m'});   
 };
 
 export const thisEstablishment = async (establishmentId, establishmentUid) => {
-    console.log("WA DEBUG - calling thisEstablishment is params: ", establishmentId, establishmentUid)
+    const SFC_API_ENDPOINT = isLocalhostRegex.test(process.env.SFC_HOST)
+                                ? 'http://localhost:3000/api'
+                                :  `https://${process.env.SFC_API_ENDPOINT}/api`;
+    const SFC_THIS_ESTABLISHMENTS = `${SFC_API_ENDPOINT}/establishment`;
+
     const apiUrl = `${SFC_THIS_ESTABLISHMENTS}/${establishmentId}?history=null`;
 
     try {
         logTrace("sfc.api::thisEstablishment - About to call upon SfC API with url", apiUrl);
         const myJwt = loginJWT(establishmentId, establishmentUid);
         const myParams= {};
-
-        console.log("WA DEBUG - my JWT: ", myJwt)
 
         const apiResponse = await axios.get(apiUrl, {
             params: myParams,

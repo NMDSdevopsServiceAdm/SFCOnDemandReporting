@@ -16,4 +16,6 @@ const runReport = async () => {
 
 process.env.LOG_LEVEL = 5;
 process.env.SLACK_LEVEL = 0;
+//process.env.STORE = 'dev/ondemand/reporting'
+process.env.SFC_HOST = 'localhost'
 runReport();

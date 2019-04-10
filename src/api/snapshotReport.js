@@ -9,7 +9,7 @@ import { initialiseSecrets } from '../aws/secrets';
 import { v4 as uuidv4 } from 'uuid';
 
 const FETCH_ESTABLISHMENTS_API = false;
-const ESTABLISHMENT_IDS = [30, 63];
+const ESTABLISHMENT_IDS = [30, 479, 63];
 
 export const handler = async (event, context, callback) => {
   const arnList = (context.invokedFunctionArn).split(":");
@@ -17,23 +17,22 @@ export const handler = async (event, context, callback) => {
 
   const slackTitle = 'SfC Snapshot Report';
 
-  initialiseSecrets(lambdaRegion);
+  await initialiseSecrets(lambdaRegion);
 
   // slackTrace(slackTitle, event);
 
     let establishments = null;
     try {
       if (FETCH_ESTABLISHMENTS_API) {
-        console.log("WA DEBUG - fetching list of estabishments by API")
+        logInfo("Fetching list of estabishments by API")
         establishments = await allEstablishments();
         logInfo(slackTitle, "All establishments: ", establishments);
       } else {
-        console.log("WA DEBUG - iterating list of estabishments by API: ", ESTABLISHMENT_IDS)
+        logInfo("Iterating list of estabishments by API: ", ESTABLISHMENT_IDS)
         //const thisEstablishment = await thisEstablishment(30, uuidv4());
         const allEstablishmentPromises = [];
         ESTABLISHMENT_IDS.forEach(async thisEstablishmentId => {
           const thisPromise = thisEstablishment(thisEstablishmentId, uuidv4());
-          console.log(`WA DEBUG - getting Establishment with id ( ${thisEstablishmentId})`, thisPromise);
 
           allEstablishmentPromises.push(thisPromise);
         });
@@ -41,7 +40,7 @@ export const handler = async (event, context, callback) => {
         await Promise.all(allEstablishmentPromises)
           .then(allEstablishmentPromises => {
             allEstablishmentPromises.forEach(thisEstablishment => {
-              console.log(`WA DEBUG - Establishment: `, thisEstablishment);
+              logInfo(`Establishment: `, thisEstablishment);
             });
           });
       }
