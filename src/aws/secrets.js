@@ -10,7 +10,6 @@ export const initialiseSecrets = async (lambdaRegion) => {
 
   const SECRETS_STORE = process.env.STORE || null;
   if (SECRETS_STORE) {
-    console.log('WA DEBUG - Retrieving secrets for: ', process.env.STORE);
     const mySecretsValue = await secrets.getSecretValue({SecretId: process.env.STORE}).promise();
 
     if (typeof mySecretsValue.SecretString !== 'undefined') {

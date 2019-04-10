@@ -24,6 +24,11 @@ custom:
     staging: "sfcstaging.cloudapps.digital"
     preprod: "sfcuat.cloudapps.digital"
     prod: "asc-wds.skillsforcare.org.uk"
+  DATA_VERSION:
+    dev: 2
+    staging: 2
+    preprod: 2
+    prod: 1
 
 provider:
   name: aws
