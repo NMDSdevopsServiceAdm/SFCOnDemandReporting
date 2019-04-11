@@ -24,7 +24,6 @@ export const initialiseSecrets = async (lambdaRegion) => {
         MONGO_DB_URI: mySecrets.MONGO_DB_URI,
         JWT_SECRET: mySecrets.JWT_SECRET,
       };
-      console.log('Retrieved secrets', myLocalSecrets);
     }
   }
 };
