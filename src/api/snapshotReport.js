@@ -28,7 +28,7 @@ export const handler = async (event, context, callback) => {
           DataVersion = parseInt(process.env.DATA_VERSION, 10);
         }
         
-        let csv = null
+        let csv = null;
         switch (DataVersion) {
           case 1: 
             csv = await dailySnapshotReportV1(establishments.establishments);
@@ -41,13 +41,24 @@ export const handler = async (event, context, callback) => {
         //console.log(csv);
         await uploadToSlack(csv);
 
-        // send by email
-        const recipient = process.env.EMAIL_RECIPIENT;
-        const htmlMessage = `<pre>${csv.replace(/^(\s*\r\n){2,}/gm, '\r\n')}</pre>`;
-        const plainMessage = csv;
-        await sendByEmail(recipient, 'Daily Snapshot Report', htmlMessage, plainMessage);
+        // send establishments by email
+        {
+          const recipient = process.env.EMAIL_RECIPIENT;
+          const htmlMessage = `<pre>${csv.establishmentsCsv.replace(/^(\s*\r\n){2,}/gm, '\r\n')}</pre>`;
+          const plainMessage = csv.establishmentsCsv;
+          await sendByEmail(recipient, 'Daily Snapshot Report - Workplaces', htmlMessage, plainMessage);
+          logInfo(`CSV length: ${csv.establishmentsCsv.length} bytes`);
+        }
 
-        logInfo(`CSV length: ${csv.length} bytes`);
+        // send establishments by email
+        {
+          const recipient = process.env.EMAIL_RECIPIENT;
+          const htmlMessage = `<pre>${csv.workersCsv.replace(/^(\s*\r\n){2,}/gm, '\r\n')}</pre>`;
+          const plainMessage = csv.workersCsv;
+          await sendByEmail(recipient, 'Daily Snapshot Report - Staff', htmlMessage, plainMessage);
+          logInfo(`CSV length: ${csv.workersCsv.length} bytes`);
+        }
+
 
     } catch (err) {
       // unable to get establishments

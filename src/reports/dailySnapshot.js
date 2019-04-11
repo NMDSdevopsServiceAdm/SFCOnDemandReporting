@@ -2,8 +2,24 @@ import { allEstablishments } from "../model/sfc.api";
 import { createObjectCsvStringifier } from 'csv-writer';
 import { inspect } from 'util';
 
+const separateEstablishments = (allEstablishmentsAndWorkers) => {
+  const establishments = [];
+  const establishmentIds = [];
+
+  allEstablishmentsAndWorkers.forEach(thisWorker => {
+    if (!establishmentIds.includes(thisWorker.EstablishmentID)) {
+      establishmentIds.push(thisWorker.EstablishmentID);
+      establishments.push(thisWorker);
+    }
+  });
+
+  return establishments;
+}
+
 export const dailySnapshotReportV1 = async (allEstablishmentsAndWorkers) => {
-  const csvWriter = createObjectCsvStringifier({
+  const establishments = separateEstablishments(allEstablishmentsAndWorkers);
+
+  const establishmentCsvWriter = createObjectCsvStringifier({
     header: [
       // establishment
       { id: 'EstablishmentID', title: 'EstablishmentID'},
@@ -28,6 +44,14 @@ export const dailySnapshotReportV1 = async (allEstablishmentsAndWorkers) => {
       { id: 'VacanciesValue', title: 'Vacancies'},
       { id: 'StartersValue', title: 'Starters'},
       { id: 'LeaversValue', title: 'Leavers'},
+    ]
+  });
+
+  const workerCsvWriter = createObjectCsvStringifier({
+    header: [
+      // establishment
+      { id: 'EstablishmentID', title: 'EstablishmentID'},
+      { id: 'NmdsID', title: 'NmdsID'},
 
       // workers
       { id: 'WorkerUID', title: 'WorkerUID'},
@@ -71,11 +95,20 @@ export const dailySnapshotReportV1 = async (allEstablishmentsAndWorkers) => {
       { id: 'HighestQualificationFKValue', title: 'HighestQualification'},
     ]
   });
-  return csvWriter.getHeaderString().concat(csvWriter.stringifyRecords(allEstablishmentsAndWorkers));
+
+  const establishmentsCsv = establishmentCsvWriter.getHeaderString().concat(establishmentCsvWriter.stringifyRecords(establishments));
+  const workersCsv = workerCsvWriter.getHeaderString().concat(workerCsvWriter.stringifyRecords(allEstablishmentsAndWorkers));
+
+  return {
+    establishmentsCsv,
+    workersCsv
+  };
 };
 
 export const dailySnapshotReportV2 = async (allEstablishmentsAndWorkers) => {
-  const csvWriter = createObjectCsvStringifier({
+  const establishments = separateEstablishments(allEstablishmentsAndWorkers);
+
+  const establishmentCsvWriter  = createObjectCsvStringifier({
     header: [
       // establishment
       { id: 'EstablishmentID', title: 'EstablishmentID'},
@@ -101,6 +134,15 @@ export const dailySnapshotReportV2 = async (allEstablishmentsAndWorkers) => {
       { id: 'VacanciesValue', title: 'Vacancies'},
       { id: 'StartersValue', title: 'Starters'},
       { id: 'LeaversValue', title: 'Leavers'},
+    ]
+  });
+
+  const workerCsvWriter  = createObjectCsvStringifier({
+    header: [
+      // establishment
+      { id: 'EstablishmentID', title: 'EstablishmentID'},
+      { id: 'EstablishmentUID', title: 'EstablishmentUID'},
+      { id: 'NmdsID', title: 'NmdsID'},
 
       // workers
       { id: 'WorkerUID', title: 'WorkerUID'},
@@ -142,8 +184,14 @@ export const dailySnapshotReportV2 = async (allEstablishmentsAndWorkers) => {
       { id: 'SocialCareQualificationFKValue', title: 'SocialCareQualification'},
       { id: 'OtherQualificationsValue', title: 'OtherQualifications'},
       { id: 'HighestQualificationFKValue', title: 'HighestQualification'},
-
     ]
   });
-  return csvWriter.getHeaderString().concat(csvWriter.stringifyRecords(allEstablishmentsAndWorkers));
+
+  const establishmentsCsv = establishmentCsvWriter.getHeaderString().concat(establishmentCsvWriter.stringifyRecords(establishments));
+  const workersCsv = workerCsvWriter.getHeaderString().concat(workerCsvWriter.stringifyRecords(allEstablishmentsAndWorkers));
+
+  return {
+    establishmentsCsv,
+    workersCsv
+  };
 };
