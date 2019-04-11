@@ -14,7 +14,7 @@ const runReport = async () => {
 
 process.env.LOG_LEVEL = 3;
 process.env.SLACK_LEVEL = 0;
-process.env.SFC_HOST = 'sfcdev.cloudapps.digital';
+process.env.SFC_HOST = 'localhost';
 process.env.EMAIL_SENDER = 'warren.ayling@wozitech-ltd.co.uk';
 process.env.EMAIL_RECIPIENT = 'warren.ayling@wozitech-ltd.co.uk';
 runReport();
