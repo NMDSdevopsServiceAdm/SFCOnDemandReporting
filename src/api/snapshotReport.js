@@ -4,7 +4,7 @@ import { allEstablishments, thisEstablishment } from '../model/sfc.api';
 import { logInfo, logError, logWarn, logTrace } from '../common/logger';
 import { slackInfo, uploadToSlack, slackError } from '../common/slack';
 import { initialiseSecrets } from '../aws/secrets';
-import { initialiseSES, sendByEmail } from '../aws/ses';
+import { initialiseSES, sendByEmailWithAttachment } from '../aws/ses';
 import { dailySnapshotReportV1, dailySnapshotReportV2 } from '../reports/dailySnapshot';
 
 export const handler = async (event, context, callback) => {
@@ -20,45 +20,41 @@ export const handler = async (event, context, callback) => {
 
     let establishments = null;
     try {
-        logInfo("Fetching list of estabishments by API")
-        establishments = await allEstablishments();
+      logInfo("Fetching list of estabishments by API")
+      establishments = await allEstablishments();
 
-        let DataVersion = 'latest';
-        if (process.env.DATA_VERSION) {
-          DataVersion = parseInt(process.env.DATA_VERSION, 10);
-        }
-        
-        let csv = null;
-        switch (DataVersion) {
-          case 1: 
-            csv = await dailySnapshotReportV1(establishments.establishments);
-            break;
+      let DataVersion = 'latest';
+      if (process.env.DATA_VERSION) {
+        DataVersion = parseInt(process.env.DATA_VERSION, 10);
+      }
+      
+      let csv = null;
+      switch (DataVersion) {
+        case 1: 
+          csv = await dailySnapshotReportV1(establishments.establishments);
+          break;
 
-          default:
-            csv = await dailySnapshotReportV2(establishments.establishments);
-        }
-        
-        //console.log(csv);
-        await uploadToSlack(csv);
+        default:
+          csv = await dailySnapshotReportV2(establishments.establishments);
+      }
+      
+      //console.log(csv);
+      await uploadToSlack(csv);
 
-        // send establishments by email
+      // send establishments by email
+      const recipient = process.env.EMAIL_RECIPIENT;
+      const attachments = [
         {
-          const recipient = process.env.EMAIL_RECIPIENT;
-          const htmlMessage = `<pre>${csv.establishmentsCsv.replace(/^(\s*\r\n){2,}/gm, '\r\n')}</pre>`;
-          const plainMessage = csv.establishmentsCsv;
-          await sendByEmail(recipient, 'Daily Snapshot Report - Workplaces', htmlMessage, plainMessage);
-          logInfo(`CSV length: ${csv.establishmentsCsv.length} bytes`);
-        }
-
-        // send establishments by email
+          content: csv.establishmentsCsv,
+          filename: 'establishments.csv'
+        },
         {
-          const recipient = process.env.EMAIL_RECIPIENT;
-          const htmlMessage = `<pre>${csv.workersCsv.replace(/^(\s*\r\n){2,}/gm, '\r\n')}</pre>`;
-          const plainMessage = csv.workersCsv;
-          await sendByEmail(recipient, 'Daily Snapshot Report - Staff', htmlMessage, plainMessage);
-          logInfo(`CSV length: ${csv.workersCsv.length} bytes`);
+          content: csv.workersCsv,
+          filename: 'workers.csv'
         }
-
+      ];
+      await sendByEmailWithAttachment(recipient, 'Daily Snapshot Report', attachments);
+      logInfo(`Establishments/Workers CSV length: ${csv.establishmentsCsv.length} bytes / ${csv.workersCsv.length}`);
 
     } catch (err) {
       // unable to get establishments
@@ -75,7 +71,7 @@ export const handler = async (event, context, callback) => {
 
     // get this far with success and a set of next arrivals
     if (establishments && establishments.establishments) {
-      const responseMsg = `Successfully retrieved Establishments: #${establishments.establishments.count}`;
+      const responseMsg = `Successfully processed Daily Snapshot Report`;
       logInfo(responseMsg);
       slackInfo(slackTitle, responseMsg);
 

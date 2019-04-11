@@ -1,5 +1,6 @@
 // this is simply to test sending emails via AWA SES
 import AWS  from 'aws-sdk';
+import mailcomposer from 'mailcomposer';
 import { logInfo, logError } from '../common/logger';
 
 let thisSES = null;
@@ -58,4 +59,28 @@ export const sendByEmail = async (to, subject, htmlMessage, plainMessage) =>  {
     } catch (err) {
       logError(err);
     }
+};
+
+export const sendByEmailWithAttachment = async (to, subject, attachments) => {
+  let sendRawEmailPromise;
+
+  const mail = mailcomposer({
+    from: sender,
+    replyTo: sender,
+    to,
+    subject,
+    text: 'Attached are establishments and workers daily snapshot reports.',
+    attachments,
+  });
+
+  return new Promise((resolve, reject) => {
+    mail.build((err, message) => {
+      if (err) {
+        reject(`Error sending raw email: ${err}`);
+      }
+      sendRawEmailPromise = thisSES.sendRawEmail({RawMessage: {Data: message}}).promise();
+    });
+
+    resolve(sendRawEmailPromise);
+  });
 };
