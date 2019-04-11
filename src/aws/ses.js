@@ -61,9 +61,7 @@ export const sendByEmail = async (to, subject, htmlMessage, plainMessage) =>  {
     }
 };
 
-export const sendByEmailWithAttachment = async (to, subject, attachments) => {
-  let sendRawEmailPromise;
-
+export const sendByEmailWithAttachment = (to, subject, attachments) => {
   const mail = mailcomposer({
     from: sender,
     replyTo: sender,
@@ -76,11 +74,18 @@ export const sendByEmailWithAttachment = async (to, subject, attachments) => {
   return new Promise((resolve, reject) => {
     mail.build((err, message) => {
       if (err) {
-        reject(`Error sending raw email: ${err}`);
+        reject(`Error composing raw email: ${err}`);
       }
-      sendRawEmailPromise = thisSES.sendRawEmail({RawMessage: {Data: message}}).promise();
-    });
+      const sendRawEmailPromise = thisSES.sendRawEmail({RawMessage: {Data: message}}).promise();
 
-    resolve(sendRawEmailPromise);
+      sendRawEmailPromise
+        .then(data => {
+          resolve(`sendByEmailWithAttachment: sent email to ${to}`);
+        })
+        .catch(err => {
+          reject(`Error send raw email: ${err}`);
+        });
+      
+    });
   });
 };

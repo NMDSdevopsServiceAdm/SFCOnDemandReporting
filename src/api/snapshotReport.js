@@ -53,8 +53,8 @@ export const handler = async (event, context, callback) => {
           filename: 'workers.csv'
         }
       ];
-      await sendByEmailWithAttachment(recipient, 'Daily Snapshot Report', attachments);
-      logInfo(`Establishments/Workers CSV length: ${csv.establishmentsCsv.length} bytes / ${csv.workersCsv.length}`);
+      const sentEmailResponse =  await sendByEmailWithAttachment(recipient, 'Daily Snapshot Report', attachments);
+      logInfo(`Establishments/Workers CSV length: ${csv.establishmentsCsv.length} bytes / ${csv.workersCsv.length}. ${sentEmailResponse}.`);
 
     } catch (err) {
       // unable to get establishments
