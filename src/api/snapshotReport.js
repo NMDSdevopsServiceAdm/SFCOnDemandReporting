@@ -28,9 +28,8 @@ export const handler = async (event, context, callback) => {
         DataVersion = parseInt(process.env.DATA_VERSION, 10);
       }
 
-      console.log("WA DEBUG - data version: ", DataVersion)
-      
       let csv = null;
+      logInfo(`Running daily snapshot report V${DataVersion}`);
       switch (DataVersion) {
         case 1: 
           csv = await dailySnapshotReportV1(establishments.establishments);

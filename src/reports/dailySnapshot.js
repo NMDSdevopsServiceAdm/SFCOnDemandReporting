@@ -198,7 +198,6 @@ export const dailySnapshotReportV2 = async (allEstablishmentsAndWorkers) => {
 
 
 export const dailySnapshotReportV3 = async (allEstablishmentsAndWorkers) => {
-  console.log("WA DEBUG - calling V3 of snapshot report")
   const establishments = separateEstablishments(allEstablishmentsAndWorkers);
 
   const establishmentCsvWriter  = createObjectCsvStringifier({
