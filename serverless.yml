@@ -4,6 +4,11 @@ custom:
   environment: ${opt:stage, 'development'}
   bucketName: "${self:custom.environment}-thisbucket"
   region: ${opt:region, 'eu-west-1'}
+  ESTABLISHMENT_KINESIS_STREAM:
+    dev: arn:aws:kinesis:#{AWS::Region}:#{AWS::AccountId}:stream/establishments.dev
+    staging: arn:aws:kinesis:#{AWS::Region}:#{AWS::AccountId}:stream/establishments.staging
+    preprod: arn:aws:kinesis:#{AWS::Region}:#{AWS::AccountId}:stream/establishments.preprod
+    prod: arn:aws:kinesis:#{AWS::Region}:#{AWS::AccountId}:stream/establishments.prod
   EMAIL_SENDER:
     dev: warren.ayling@wozitech-ltd.co.uk
     staging: warren.ayling@wozitech-ltd.co.uk
@@ -11,7 +16,7 @@ custom:
     prod: NMDSdevopsServiceAdm@hotmail.com
   EMAIL_RECIPIENT:
     dev: warren.ayling@wozitech-ltd.co.uk
-    staging: warren.ayling@wozitech-ltd.co.uk
+    staging: ann.shepherd1@soprasteria.com
     preprod: warren.ayling@wozitech-ltd.co.uk
     prod: david.griffiths@skillsforcare.org.uk
   STORE:
@@ -80,7 +85,7 @@ functions:
     events:
       - stream:
           type: kinesis
-          arn:  arn:aws:kinesis:#{AWS::Region}:#{AWS::AccountId}:stream/establishments.dev
+          arn:  "${self:custom.ESTABLISHMENT_KINESIS_STREAM.${self:provider.stage}}"
           batchSize: 100
           startingPosition: LATEST
     tags:
