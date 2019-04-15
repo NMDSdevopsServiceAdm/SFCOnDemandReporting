@@ -18,7 +18,7 @@ custom:
     dev: warren.ayling@wozitech-ltd.co.uk
     staging: ann.shepherd1@soprasteria.com
     preprod: warren.ayling@wozitech-ltd.co.uk
-    prod: david.griffiths@skillsforcare.org.uk
+    prod: will.fenton@skillsforcare.org.uk
   STORE:
     dev: "dev/ondemand/reporting"
     staging: "staging/ondemand/reporting"
