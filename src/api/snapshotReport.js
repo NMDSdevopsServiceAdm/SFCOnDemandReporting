@@ -5,7 +5,7 @@ import { logInfo, logError, logWarn, logTrace } from '../common/logger';
 import { slackInfo, uploadToSlack, slackError } from '../common/slack';
 import { initialiseSecrets } from '../aws/secrets';
 import { initialiseSES, sendByEmailWithAttachment } from '../aws/ses';
-import { dailySnapshotReportV1, dailySnapshotReportV2 } from '../reports/dailySnapshot';
+import { dailySnapshotReportV1, dailySnapshotReportV2, dailySnapshotReportV3 } from '../reports/dailySnapshot';
 
 export const handler = async (event, context, callback) => {
   const arnList = (context.invokedFunctionArn).split(":");
@@ -27,11 +27,21 @@ export const handler = async (event, context, callback) => {
       if (process.env.DATA_VERSION) {
         DataVersion = parseInt(process.env.DATA_VERSION, 10);
       }
+
+      console.log("WA DEBUG - data version: ", DataVersion)
       
       let csv = null;
       switch (DataVersion) {
         case 1: 
           csv = await dailySnapshotReportV1(establishments.establishments);
+          break;
+
+        case 2:
+          csv = await dailySnapshotReportV2(establishments.establishments);
+          break;
+
+        case 3:
+          csv = await dailySnapshotReportV3(establishments.establishments);
           break;
 
         default:
