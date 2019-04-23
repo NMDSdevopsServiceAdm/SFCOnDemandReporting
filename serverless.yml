@@ -30,10 +30,10 @@ custom:
     preprod: "sfcuat.cloudapps.digital"
     prod: "asc-wds.skillsforcare.org.uk"
   DATA_VERSION:
-    dev: 2
-    staging: 2
+    dev: 3
+    staging: 3
     preprod: 2
-    prod: 1
+    prod: 2
 
 provider:
   name: aws
