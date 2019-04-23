@@ -107,6 +107,14 @@ export const dailySnapshotReportV1 = async (allEstablishmentsAndWorkers) => {
 
 export const dailySnapshotReportV2 = async (allEstablishmentsAndWorkers) => {
   const establishments = separateEstablishments(allEstablishmentsAndWorkers);
+  
+  // remap the workers, which includes calculated CssR ID (the first letter on NMDS ID)
+  const workers = allEstablishmentsAndWorkers.map(thisWorker => {
+    const newWorker = thisWorker;
+
+    newWorker.CssRCalculated = thisWorker.NmdsID.substring(0,1);
+    return newWorker;
+  });
 
   const establishmentCsvWriter  = createObjectCsvStringifier({
     header: [
@@ -160,7 +168,7 @@ export const dailySnapshotReportV2 = async (allEstablishmentsAndWorkers) => {
       { id: 'OtherJobsValue', title: 'OtherJobs'},
       { id: 'NationalInsuranceNumberValue', title: 'NationalInsuranceNumber'},
       { id: 'DateOfBirthValue', title: 'Age'},
-      { id: 'PostcodeValue', title: 'Postcode'},
+      { id: 'CssRCalculated', title: 'CssrID'},
       { id: 'DisabilityValue', title: 'DisabilityValue'},
       { id: 'GenderValue', title: 'Gender'},
       { id: 'EthnicityFKValue', title: 'Ethnicity'},
@@ -188,7 +196,7 @@ export const dailySnapshotReportV2 = async (allEstablishmentsAndWorkers) => {
   });
 
   const establishmentsCsv = establishmentCsvWriter.getHeaderString().concat(establishmentCsvWriter.stringifyRecords(establishments));
-  const workersCsv = workerCsvWriter.getHeaderString().concat(workerCsvWriter.stringifyRecords(allEstablishmentsAndWorkers));
+  const workersCsv = workerCsvWriter.getHeaderString().concat(workerCsvWriter.stringifyRecords(workers));
 
   return {
     establishmentsCsv,
@@ -199,6 +207,14 @@ export const dailySnapshotReportV2 = async (allEstablishmentsAndWorkers) => {
 
 export const dailySnapshotReportV3 = async (allEstablishmentsAndWorkers) => {
   const establishments = separateEstablishments(allEstablishmentsAndWorkers);
+
+  // remap the workers, which includes calculated CssR ID (the first letter on NMDS ID)
+  const workers = allEstablishmentsAndWorkers.map(thisWorker => {
+    const newWorker = thisWorker;
+
+    newWorker.CssRCalculated = thisWorker.NmdsID.substring(0,1);
+    return newWorker;
+  });
 
   const establishmentCsvWriter  = createObjectCsvStringifier({
     header: [
@@ -259,7 +275,7 @@ export const dailySnapshotReportV3 = async (allEstablishmentsAndWorkers) => {
       { id: 'OtherJobsValue', title: 'OtherJobs'},
       { id: 'NationalInsuranceNumberValue', title: 'NationalInsuranceNumber'},
       { id: 'DateOfBirthValue', title: 'Age'},
-      { id: 'PostcodeValue', title: 'Postcode'},
+      { id: 'CssRCalculated', title: 'CssrID'},
       { id: 'DisabilityValue', title: 'DisabilityValue'},
       { id: 'GenderValue', title: 'Gender'},
       { id: 'EthnicityFKValue', title: 'Ethnicity'},
@@ -287,7 +303,7 @@ export const dailySnapshotReportV3 = async (allEstablishmentsAndWorkers) => {
   });
 
   const establishmentsCsv = establishmentCsvWriter.getHeaderString().concat(establishmentCsvWriter.stringifyRecords(establishments));
-  const workersCsv = workerCsvWriter.getHeaderString().concat(workerCsvWriter.stringifyRecords(allEstablishmentsAndWorkers));
+  const workersCsv = workerCsvWriter.getHeaderString().concat(workerCsvWriter.stringifyRecords(workers));
 
   return {
     establishmentsCsv,
