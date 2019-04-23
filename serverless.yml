@@ -67,6 +67,7 @@ functions:
       LOG_LEVEL: 3      # 0-disabled; 1-errors, 2-warnings, 3-info, 4-debug, 5-trace
       EMAIL_SENDER: "${self:custom.EMAIL_SENDER.${self:provider.stage}}"
       EMAIL_RECIPIENT: "${self:custom.EMAIL_RECIPIENT.${self:provider.stage}}"
+      DATA_VERSION: "${self:custom.DATA_VERSION.${self:provider.stage}}"
     tags:
       application: "Reporting"
       function: "On Demand Reporting"
