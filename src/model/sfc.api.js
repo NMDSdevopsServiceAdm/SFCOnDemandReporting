@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
-import { logDebug, logTrace } from '../common/logger';
+import { logDebug, logTrace, logError } from '../common/logger';
 import { jwtSecret } from '../aws/secrets';
 
 const isLocalhostRegex = /^localhost$/;
@@ -114,5 +114,173 @@ export const thisEstablishment = async (establishmentId, establishmentUid) => {
             status: err.response && err.response.status ? err.response.status : -1,
             err: err.response && err.response.statusText ? err.response.statusText : 'undefined'
         };
+    }
+};
+
+export const myServices = async () => {
+    const SFC_API_ENDPOINT = isLocalhostRegex.test(process.env.SFC_HOST)
+                                ? 'http://localhost:3000/api'
+                                :  `https://${process.env.SFC_API_ENDPOINT}/api`;
+    const SFC_THIS_ESTABLISHMENTS = `${SFC_API_ENDPOINT}/services`;
+
+    const apiUrl = `${SFC_THIS_ESTABLISHMENTS}`;
+
+    try {
+        logTrace('sfc.api::myServices - About to call upon SfC API with url', apiUrl);
+        const apiResponse = await axios.get(apiUrl, {
+        });
+
+        logDebug('sfc.api::myServices to return', apiResponse.data);
+
+        return apiResponse.data;
+
+    } catch (err) {
+        logError('sfc.api::myServices: ',
+            err.response && err.response.status ? err.response.status : -1,
+            err.response && err.response.statusText ? err.response.statusText : 'undefined');
+    }
+};
+
+export const myJobs = async () => {
+    const SFC_API_ENDPOINT = isLocalhostRegex.test(process.env.SFC_HOST)
+                                ? 'http://localhost:3000/api'
+                                :  `https://${process.env.SFC_API_ENDPOINT}/api`;
+    const SFC_THIS_ESTABLISHMENTS = `${SFC_API_ENDPOINT}/jobs`;
+
+    const apiUrl = `${SFC_THIS_ESTABLISHMENTS}`;
+
+    try {
+        logTrace('sfc.api::myJobs - About to call upon SfC API with url', apiUrl);
+        const apiResponse = await axios.get(apiUrl, {
+        });
+        
+        logDebug('sfc.api::myJobs to return', apiResponse.data);
+
+        return apiResponse.data;
+
+    } catch (err) {
+        logError('sfc.api::myJobs: ',
+            err.response && err.response.status ? err.response.status : -1,
+            err.response && err.response.statusText ? err.response.statusText : 'undefined');
+    }
+};
+
+export const myEthnicities = async () => {
+    const SFC_API_ENDPOINT = isLocalhostRegex.test(process.env.SFC_HOST)
+                                ? 'http://localhost:3000/api'
+                                :  `https://${process.env.SFC_API_ENDPOINT}/api`;
+    const SFC_THIS_ESTABLISHMENTS = `${SFC_API_ENDPOINT}/ethnicity`;
+
+    const apiUrl = `${SFC_THIS_ESTABLISHMENTS}`;
+
+    try {
+        logTrace('sfc.api::myEthnicities - About to call upon SfC API with url', apiUrl);
+        const apiResponse = await axios.get(apiUrl, {
+        });
+        
+        logDebug('sfc.api::myEthnicities to return', apiResponse.data);
+
+        return apiResponse.data;
+
+    } catch (err) {
+        logError('sfc.api::myEthnicities: ',
+            err.response && err.response.status ? err.response.status : -1,
+            err.response && err.response.statusText ? err.response.statusText : 'undefined');
+    }
+};
+
+export const myCountries = async () => {
+    const SFC_API_ENDPOINT = isLocalhostRegex.test(process.env.SFC_HOST)
+                                ? 'http://localhost:3000/api'
+                                :  `https://${process.env.SFC_API_ENDPOINT}/api`;
+    const SFC_THIS_ESTABLISHMENTS = `${SFC_API_ENDPOINT}/country`;
+
+    const apiUrl = `${SFC_THIS_ESTABLISHMENTS}`;
+
+    try {
+        logTrace('sfc.api::myCountries - About to call upon SfC API with url', apiUrl);
+        const apiResponse = await axios.get(apiUrl, {
+        });
+        
+        logDebug('sfc.api::myCountries to return', apiResponse.data);
+
+        return apiResponse.data;
+
+    } catch (err) {
+        logError('sfc.api::myCountries: ',
+            err.response && err.response.status ? err.response.status : -1,
+            err.response && err.response.statusText ? err.response.statusText : 'undefined');
+    }
+};
+
+export const myNationality = async () => {
+    const SFC_API_ENDPOINT = isLocalhostRegex.test(process.env.SFC_HOST)
+                                ? 'http://localhost:3000/api'
+                                :  `https://${process.env.SFC_API_ENDPOINT}/api`;
+    const SFC_THIS_ESTABLISHMENTS = `${SFC_API_ENDPOINT}/nationality`;
+
+    const apiUrl = `${SFC_THIS_ESTABLISHMENTS}`;
+
+    try {
+        logTrace('sfc.api::myNationality - About to call upon SfC API with url', apiUrl);
+        const apiResponse = await axios.get(apiUrl, {
+        });
+        
+        logDebug('sfc.api::myNationality to return', apiResponse.data);
+
+        return apiResponse.data;
+
+    } catch (err) {
+        logError('sfc.api::myNationality: ',
+            err.response && err.response.status ? err.response.status : -1,
+            err.response && err.response.statusText ? err.response.statusText : 'undefined');
+    }
+};
+
+export const myRecruitmentSources = async () => {
+    const SFC_API_ENDPOINT = isLocalhostRegex.test(process.env.SFC_HOST)
+                                ? 'http://localhost:3000/api'
+                                :  `https://${process.env.SFC_API_ENDPOINT}/api`;
+    const SFC_THIS_ESTABLISHMENTS = `${SFC_API_ENDPOINT}/recruitedFrom`;
+
+    const apiUrl = `${SFC_THIS_ESTABLISHMENTS}`;
+
+    try {
+        logTrace('sfc.api::myRecruitmentSources - About to call upon SfC API with url', apiUrl);
+        const apiResponse = await axios.get(apiUrl, {
+        });
+        
+        logDebug('sfc.api::myRecruitmentSources to return', apiResponse.data);
+
+        return apiResponse.data;
+
+    } catch (err) {
+        logError('sfc.api::myRecruitmentSources: ',
+            err.response && err.response.status ? err.response.status : -1,
+            err.response && err.response.statusText ? err.response.statusText : 'undefined');
+    }
+};
+
+export const myQualifications = async () => {
+    const SFC_API_ENDPOINT = isLocalhostRegex.test(process.env.SFC_HOST)
+                                ? 'http://localhost:3000/api'
+                                :  `https://${process.env.SFC_API_ENDPOINT}/api`;
+    const SFC_THIS_ESTABLISHMENTS = `${SFC_API_ENDPOINT}/qualification`;
+
+    const apiUrl = `${SFC_THIS_ESTABLISHMENTS}`;
+
+    try {
+        logTrace('sfc.api::myQualifications - About to call upon SfC API with url', apiUrl);
+        const apiResponse = await axios.get(apiUrl, {
+        });
+        
+        logDebug('sfc.api::myQualifications to return', apiResponse.data);
+
+        return apiResponse.data;
+
+    } catch (err) {
+        logError('sfc.api::myQualifications: ',
+            err.response && err.response.status ? err.response.status : -1,
+            err.response && err.response.statusText ? err.response.statusText : 'undefined');
     }
 };

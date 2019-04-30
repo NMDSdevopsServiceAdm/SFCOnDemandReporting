@@ -1,6 +1,6 @@
 'use strict';
 
-import { allEstablishments, thisEstablishment } from '../model/sfc.api';
+import { allEstablishments, myServices,  myJobs, myEthnicities, myCountries, myNationality, myRecruitmentSources, myQualifications } from '../model/sfc.api';
 import { logInfo, logError, logWarn, logTrace } from '../common/logger';
 import { slackInfo, uploadToSlack, slackError } from '../common/slack';
 import { initialiseSecrets } from '../aws/secrets';
@@ -16,35 +16,42 @@ export const handler = async (event, context, callback) => {
   await initialiseSecrets(lambdaRegion);
   await initialiseSES(lambdaRegion);
 
+  const lookups = {};
+
   // slackTrace(slackTitle, event);
 
     let establishments = null;
     try {
-      logInfo("Fetching list of estabishments by API")
-      establishments = await allEstablishments();
-
       let DataVersion = 'latest';
       if (process.env.DATA_VERSION) {
         DataVersion = parseInt(process.env.DATA_VERSION, 10);
       }
 
+      logInfo('Fetching list of estabishments by API');
+      establishments = await allEstablishments();
+
+      logInfo('Fetching reference lookups');
+      lookups.services = await myServices();
+      lookups.jobs = await myJobs();
+      lookups.ethnicities = await myEthnicities();
+      lookups.countries = await myCountries();
+      lookups.nationalities = await myNationality();
+      lookups.recruitmentSources = await myRecruitmentSources();
+      lookups.qualifications = await myQualifications();
+
       let csv = null;
       logInfo(`Running daily snapshot report V${DataVersion}`);
       switch (DataVersion) {
-        case 1: 
-          csv = await dailySnapshotReportV1(establishments.establishments);
-          break;
-
         case 2:
-          csv = await dailySnapshotReportV2(establishments.establishments);
+          csv = await dailySnapshotReportV2(establishments.establishments, lookups);
           break;
 
         case 3:
-          csv = await dailySnapshotReportV3(establishments.establishments);
+          csv = await dailySnapshotReportV3(establishments.establishments, lookups);
           break;
 
         default:
-          csv = await dailySnapshotReportV2(establishments.establishments);
+          csv = await dailySnapshotReportV2(establishments.establishments, lookups);
       }
       
       //console.log(csv);
