@@ -120,7 +120,7 @@ export const thisEstablishment = async (establishmentId, establishmentUid) => {
 export const myServices = async () => {
     const SFC_API_ENDPOINT = isLocalhostRegex.test(process.env.SFC_HOST)
                                 ? 'http://localhost:3000/api'
-                                :  `https://${process.env.SFC_API_ENDPOINT}/api`;
+                                :  `https://${process.env.SFC_HOST}/api`;
     const SFC_THIS_ESTABLISHMENTS = `${SFC_API_ENDPOINT}/services`;
 
     const apiUrl = `${SFC_THIS_ESTABLISHMENTS}`;
@@ -144,7 +144,7 @@ export const myServices = async () => {
 export const myJobs = async () => {
     const SFC_API_ENDPOINT = isLocalhostRegex.test(process.env.SFC_HOST)
                                 ? 'http://localhost:3000/api'
-                                :  `https://${process.env.SFC_API_ENDPOINT}/api`;
+                                :  `https://${process.env.SFC_HOST}/api`;
     const SFC_THIS_ESTABLISHMENTS = `${SFC_API_ENDPOINT}/jobs`;
 
     const apiUrl = `${SFC_THIS_ESTABLISHMENTS}`;
@@ -168,7 +168,7 @@ export const myJobs = async () => {
 export const myEthnicities = async () => {
     const SFC_API_ENDPOINT = isLocalhostRegex.test(process.env.SFC_HOST)
                                 ? 'http://localhost:3000/api'
-                                :  `https://${process.env.SFC_API_ENDPOINT}/api`;
+                                :  `https://${process.env.SFC_HOST}/api`;
     const SFC_THIS_ESTABLISHMENTS = `${SFC_API_ENDPOINT}/ethnicity`;
 
     const apiUrl = `${SFC_THIS_ESTABLISHMENTS}`;
@@ -192,7 +192,7 @@ export const myEthnicities = async () => {
 export const myCountries = async () => {
     const SFC_API_ENDPOINT = isLocalhostRegex.test(process.env.SFC_HOST)
                                 ? 'http://localhost:3000/api'
-                                :  `https://${process.env.SFC_API_ENDPOINT}/api`;
+                                :  `https://${process.env.SFC_HOST}/api`;
     const SFC_THIS_ESTABLISHMENTS = `${SFC_API_ENDPOINT}/country`;
 
     const apiUrl = `${SFC_THIS_ESTABLISHMENTS}`;
@@ -216,7 +216,7 @@ export const myCountries = async () => {
 export const myNationality = async () => {
     const SFC_API_ENDPOINT = isLocalhostRegex.test(process.env.SFC_HOST)
                                 ? 'http://localhost:3000/api'
-                                :  `https://${process.env.SFC_API_ENDPOINT}/api`;
+                                :  `https://${process.env.SFC_HOST}/api`;
     const SFC_THIS_ESTABLISHMENTS = `${SFC_API_ENDPOINT}/nationality`;
 
     const apiUrl = `${SFC_THIS_ESTABLISHMENTS}`;
@@ -240,7 +240,7 @@ export const myNationality = async () => {
 export const myRecruitmentSources = async () => {
     const SFC_API_ENDPOINT = isLocalhostRegex.test(process.env.SFC_HOST)
                                 ? 'http://localhost:3000/api'
-                                :  `https://${process.env.SFC_API_ENDPOINT}/api`;
+                                :  `https://${process.env.SFC_HOST}/api`;
     const SFC_THIS_ESTABLISHMENTS = `${SFC_API_ENDPOINT}/recruitedFrom`;
 
     const apiUrl = `${SFC_THIS_ESTABLISHMENTS}`;
@@ -264,7 +264,7 @@ export const myRecruitmentSources = async () => {
 export const myQualifications = async () => {
     const SFC_API_ENDPOINT = isLocalhostRegex.test(process.env.SFC_HOST)
                                 ? 'http://localhost:3000/api'
-                                :  `https://${process.env.SFC_API_ENDPOINT}/api`;
+                                :  `https://${process.env.SFC_HOST}/api`;
     const SFC_THIS_ESTABLISHMENTS = `${SFC_API_ENDPOINT}/qualification`;
 
     const apiUrl = `${SFC_THIS_ESTABLISHMENTS}`;
