@@ -13,9 +13,10 @@ const runReport = async () => {
 }
 
 process.env.LOG_LEVEL = 3;
-process.env.SLACK_LEVEL = 0;
+process.env.SLACK_LEVEL = 3;
 process.env.SFC_HOST = 'localhost';
 process.env.EMAIL_SENDER = 'warren.ayling@wozitech-ltd.co.uk';
 process.env.EMAIL_RECIPIENT = 'warren.ayling@wozitech-ltd.co.uk';
 process.env.DATA_VERSION = 3;
+process.env.S3_REPORTS_BUCKET = 'sfc-reports-buckets-dev';
 runReport();

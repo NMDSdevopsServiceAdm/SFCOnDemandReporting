@@ -4,7 +4,8 @@ import { allEstablishments, myServices,  myJobs, myEthnicities, myCountries, myN
 import { logInfo, logError, logWarn, logTrace } from '../common/logger';
 import { slackInfo, uploadToSlack, slackError } from '../common/slack';
 import { initialiseSecrets } from '../aws/secrets';
-import { initialiseSES, sendByEmailWithAttachment } from '../aws/ses';
+import { initialiseSES, sendByEmail } from '../aws/ses';
+import { initialiseS3, upload } from '../aws/s3';
 import { dailySnapshotReportV1, dailySnapshotReportV2, dailySnapshotReportV3 } from '../reports/dailySnapshot';
 
 export const handler = async (event, context, callback) => {
@@ -15,6 +16,7 @@ export const handler = async (event, context, callback) => {
 
   await initialiseSecrets(lambdaRegion);
   await initialiseSES(lambdaRegion);
+  await initialiseS3(lambdaRegion);
 
   const lookups = {};
 
@@ -57,21 +59,21 @@ export const handler = async (event, context, callback) => {
       //console.log(csv);
       await uploadToSlack(csv);
 
+      const today = (new Date()).toISOString().slice(0,10).replace(/-/g,"");
+
+      const EXPIRY_IN_HOURS=5;
+      const establishmentUrl = await upload(`${today}-establishments.csv`, csv.establishmentsCsv, EXPIRY_IN_HOURS);
+      const workerUrl = await upload(`${today}-workers.csv`, csv.workersCsv, EXPIRY_IN_HOURS);
+
       // send establishments by email
       const recipient = process.env.EMAIL_RECIPIENT;
-      const attachments = [
-        {
-          content: csv.establishmentsCsv,
-          filename: 'establishments.csv'
-        },
-        {
-          content: csv.workersCsv,
-          filename: 'workers.csv'
-        }
-      ];
-      const sentEmailResponse =  await sendByEmailWithAttachment(recipient, 'Daily Snapshot Report', attachments);
-      logInfo(`Establishments/Workers CSV length: ${csv.establishmentsCsv.length} bytes / ${csv.workersCsv.length}. ${sentEmailResponse}.`);
+      const htmlMessage = `<html><body>Today's Daily Snapshot Reports (${today}):<br/><ul><li><a href="${establishmentUrl}">Establishment</a></li><li><a href="${workerUrl}">Worker</a></ul></html>`;
+      const plainMessage = '';
+      await sendByEmail(recipient, 'Daily Snapshot Report', htmlMessage, plainMessage);
 
+      await slackInfo(`Today's (${today}) Daily Snapshot Establishment Report: <${establishmentUrl}|establishments>`);
+      await slackInfo(`Today's (${today}) Daily Snapshot Workers Report: <${workerUrl}|workers>`);
+      
     } catch (err) {
       // unable to get establishments
       logError(err);
@@ -89,7 +91,6 @@ export const handler = async (event, context, callback) => {
     if (establishments && establishments.establishments) {
       const responseMsg = `Successfully processed Daily Snapshot Report`;
       logInfo(responseMsg);
-      slackInfo(slackTitle, responseMsg);
 
       return 'Success';
     }
