@@ -68,3 +68,18 @@ export const findQualification = (qualifications, qualificationId) => {
     }
   });
 };
+
+export const findPostcode = (allPostcodes, thePostcode) => {
+  if (thePostcode === null) return null;
+  if (!Array.isArray(allPostcodes)) return null;
+
+  return allPostcodes.find(thisPostcode => {
+    if (thisPostcode.query === thePostcode) {
+      if (thisPostcode.result === null) {
+        return null;
+      } else {
+        return thisPostcode;
+      }
+    }
+  });
+};
