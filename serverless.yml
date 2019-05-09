@@ -103,6 +103,25 @@ functions:
     package:
       include:
         - ingestEstablishments.js
+  hasher:
+    handler: hasher.handler
+    memorySize: 128
+    timeout: 3
+    environment:
+      HASH_SALT: 'xx'
+      HASH_TARGET: 'xx'
+    tags:
+      application: "Trial"
+      function: "Hashing"
+      company: "SfC"
+    events:
+      - http:
+          path: hasher
+          method: post
+          cors: true
+    package:
+      include:
+        - hasher.js
 plugins:
   - serverless-pseudo-parameters
   - serverless-plugin-include-dependencies
