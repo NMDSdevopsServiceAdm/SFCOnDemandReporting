@@ -1,6 +1,6 @@
 const myReport = require('../../lib/hasher');
 
-const body = '{ "password": "password" }';
+const body = '{ "password": "5uw8kHjS" }';
 
 const runHash = async () => {
     try {
@@ -16,6 +16,8 @@ const runHash = async () => {
     }
 }
 
-process.env.HASH_SALT = '952965cb-20af-40a9-9e30-d8180d619b43';
+process.env.HASH_SALT = 'cfbf93ec-067d-40e1-b698-1267f5673713';
 process.env.HASH_TARGET = 'aIqkkz9Q+wb1IF71wAOiqZxBY/oPwUxpe71k3+QnPCU=';
+process.env.HASH_TARGET = 'IkzZK4oNWjrXjVmfuyd2ThnyH+UCLEestXiCSQ60zXM=';       // UCS2 (UTF-16) encoding hash
+
 runHash();
