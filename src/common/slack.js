@@ -5,7 +5,7 @@ import axios from 'axios';
 import FormData from 'form-data';
 import dateFormat from 'dateformat';
 import { logError, logWarn, logInfo, logTrace } from './logger';
-import { getSlackWebHookSecret } from '../aws/secrets';
+import { getSlackWebHook } from '../aws/secrets';
 
 // log to console, if given level is less than equal to environment log level
 const SLACK_TRACE=5;
@@ -18,9 +18,9 @@ const SLACK_DISABLED=0;
 // posts the given "Slack formatted" message to the known inbound we
 const postToSlack = async (slackMsg) => {
     try {
-        const slackWebhook = await getSlackWebHookSecret()
+        const slackWebhook = await getSlackWebHook()
         const apiResponse = await axios.post(
-            slackWebhook.webhook,
+            slackWebhook,
             slackMsg,       // the data
             {
                 headers: {

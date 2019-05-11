@@ -4,8 +4,11 @@ import { allEstablishments, myServices,  myJobs, myEthnicities, myCountries, myN
 import { logInfo, logError, logWarn, logTrace } from '../common/logger';
 import { slackInfo, uploadToSlack, slackError } from '../common/slack';
 import { initialiseSecrets } from '../aws/secrets';
-import { initialiseSES, sendByEmailWithAttachment } from '../aws/ses';
-import { dailySnapshotReportV1, dailySnapshotReportV2, dailySnapshotReportV3 } from '../reports/dailySnapshot';
+import { initialiseSES, sendByEmail } from '../aws/ses';
+import { initialiseS3, upload } from '../aws/s3';
+import { separateEstablishments, dailySnapshotReportV2, dailySnapshotReportV3 } from '../reports/dailySnapshot';
+import { resolveAllPostcodes } from '../model/postcode.api';
+import { findPostcode } from '../utils/findBy';
 
 export const handler = async (event, context, callback) => {
   const arnList = (context.invokedFunctionArn).split(":");
@@ -15,12 +18,13 @@ export const handler = async (event, context, callback) => {
 
   await initialiseSecrets(lambdaRegion);
   await initialiseSES(lambdaRegion);
+  await initialiseS3(lambdaRegion);
 
   const lookups = {};
 
   // slackTrace(slackTitle, event);
 
-    let establishments = null;
+    let allEstablishmentsAndWorkersResponse = null;
     try {
       let DataVersion = 'latest';
       if (process.env.DATA_VERSION) {
@@ -28,7 +32,7 @@ export const handler = async (event, context, callback) => {
       }
 
       logInfo('Fetching list of estabishments by API');
-      establishments = await allEstablishments();
+      allEstablishmentsAndWorkersResponse = await allEstablishments();
 
       logInfo('Fetching reference lookups');
       lookups.services = await myServices();
@@ -39,39 +43,86 @@ export const handler = async (event, context, callback) => {
       lookups.recruitmentSources = await myRecruitmentSources();
       lookups.qualifications = await myQualifications();
 
+      // now separate the establishments from all the workers
+      allEstablishmentsAndWorkersResponse.establishments = separateEstablishments(allEstablishmentsAndWorkersResponse.workers, lookups.services);
+
+      // now update all the Establishments with norhtings/eastings and latitude/longitude
+      const allPostcodesToLookup = {};
+      allEstablishmentsAndWorkersResponse.establishments.forEach(thisEstablishment => {
+        allPostcodesToLookup[thisEstablishment.PostCode] =true;
+      });
+      const referencePostcodes = Object.keys(allPostcodesToLookup);
+
+      // can only lookup 100 postcodes at a time - so break into batches of 90
+      const batchSize=90;
+      let resolvedPostcodes = [];
+      for (let thisIteration = 0, totalCount=referencePostcodes.length; thisIteration < totalCount; thisIteration=thisIteration+batchSize) {
+        const thisBatchPostcodes = referencePostcodes.slice(thisIteration, (thisIteration+batchSize) > totalCount ? totalCount : (thisIteration+batchSize));
+
+        const thesePostcodes = await resolveAllPostcodes(thisBatchPostcodes);
+        resolvedPostcodes = resolvedPostcodes.concat(thesePostcodes.postcodes);
+      }
+
+      allEstablishmentsAndWorkersResponse.establishments = allEstablishmentsAndWorkersResponse.establishments.map(thisEstablishment => {
+        const lookedUpPostcode = findPostcode(resolvedPostcodes, thisEstablishment.PostCode);
+        if (lookedUpPostcode) {
+          if (lookedUpPostcode.result) {
+              thisEstablishment.Eastings = lookedUpPostcode.result.eastings;
+              thisEstablishment.Northings = lookedUpPostcode.result.northings;
+              thisEstablishment.Longitude = lookedUpPostcode.result.longitude;
+              thisEstablishment.Latitude = lookedUpPostcode.result.latitude;
+          }
+        }
+
+        return thisEstablishment;
+      });
+
+
       let csv = null;
       logInfo(`Running daily snapshot report V${DataVersion}`);
       switch (DataVersion) {
         case 2:
-          csv = await dailySnapshotReportV2(establishments.establishments, lookups);
+          csv = await dailySnapshotReportV2(allEstablishmentsAndWorkersResponse.establishments,
+                                            allEstablishmentsAndWorkersResponse.workers,
+                                            lookups);
           break;
 
         case 3:
-          csv = await dailySnapshotReportV3(establishments.establishments, lookups);
+          csv = await dailySnapshotReportV3(allEstablishmentsAndWorkersResponse.establishments,
+                                            allEstablishmentsAndWorkersResponse.workers,
+                                            lookups);
           break;
 
         default:
-          csv = await dailySnapshotReportV2(establishments.establishments, lookups);
+          csv = await dailySnapshotReportV2(allEstablishmentsAndWorkersResponse.establishments,
+                                            allEestablishmentsAndWorkersResponse.workers,
+                                            lookups);
+
       }
       
       //console.log(csv);
       await uploadToSlack(csv);
 
+      const today = (new Date()).toISOString().slice(0,10).replace(/-/g,"");
+
+      const EXPIRY_IN_HOURS=5;
+      const establishmentUrl = await upload(`${today}-establishments.csv`, csv.establishmentsCsv, EXPIRY_IN_HOURS);
+      const workerUrl = await upload(`${today}-workers.csv`, csv.workersCsv, EXPIRY_IN_HOURS);
+
+
+      // upload the reference set of establishments/workers - used for reporting dashboard
+      await upload('dashboard/establishments.csv', csv.establishmentsCsv, 0);
+      await upload('dashboard/workers.csv', csv.workersCsv, 0);
+
       // send establishments by email
       const recipient = process.env.EMAIL_RECIPIENT;
-      const attachments = [
-        {
-          content: csv.establishmentsCsv,
-          filename: 'establishments.csv'
-        },
-        {
-          content: csv.workersCsv,
-          filename: 'workers.csv'
-        }
-      ];
-      const sentEmailResponse =  await sendByEmailWithAttachment(recipient, 'Daily Snapshot Report', attachments);
-      logInfo(`Establishments/Workers CSV length: ${csv.establishmentsCsv.length} bytes / ${csv.workersCsv.length}. ${sentEmailResponse}.`);
+      const htmlMessage = `<html><body>Today's Daily Snapshot Reports (${today}):<br/><ul><li><a href="${establishmentUrl}">Establishment</a></li><li><a href="${workerUrl}">Worker</a></ul></html>`;
+      const plainMessage = '';
+      await sendByEmail(recipient, 'Daily Snapshot Report', htmlMessage, plainMessage);
 
+      await slackInfo(`Today's (${today}) Daily Snapshot Establishment Report: <${establishmentUrl}|establishments>`);
+      await slackInfo(`Today's (${today}) Daily Snapshot Workers Report: <${workerUrl}|workers>`);
+      
     } catch (err) {
       // unable to get establishments
       logError(err);
@@ -79,17 +130,16 @@ export const handler = async (event, context, callback) => {
       return 'Unable to get SfC Establishments';
     }
 
-    if (establishments && ![200,201].includes(establishments.status)) {
-      logError('Error returning from SfC API: ', establishments);
+    if (allEstablishmentsAndWorkersResponse && ![200,201].includes(allEstablishmentsAndWorkersResponse.status)) {
+      logError('Error returning from SfC API: ', allEstablishmentsAndWorkersResponse);
       slackError(slackError, 'Error returning from SfC API');
       return 'SfC API unavailable';
     }
 
     // get this far with success and a set of next arrivals
-    if (establishments && establishments.establishments) {
+    if (allEstablishmentsAndWorkersResponse && allEstablishmentsAndWorkersResponse.establishments) {
       const responseMsg = `Successfully processed Daily Snapshot Report`;
       logInfo(responseMsg);
-      slackInfo(slackTitle, responseMsg);
 
       return 'Success';
     }

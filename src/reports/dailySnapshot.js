@@ -3,7 +3,7 @@ import { createObjectCsvStringifier } from 'csv-writer';
 import { findService, findJob, findEthnicity, findCountry, findNationality, findRecruitmentSource, findQualification } from '../utils/findBy';
 import { inspect } from 'util';
 
-const separateEstablishments = (allEstablishmentsAndWorkers, referenceServices) => {
+export const separateEstablishments = (allEstablishmentsAndWorkers, referenceServices) => {
   const establishments = [];
   const establishmentIds = [];
 
@@ -14,6 +14,59 @@ const separateEstablishments = (allEstablishmentsAndWorkers, referenceServices) 
       const thisEstablishment = thisWorker;
       const mainServiceByName = findService(referenceServices, thisEstablishment.MainServiceFKValue);
       thisEstablishment.MainServiceValue = mainServiceByName ? mainServiceByName.name : null;
+
+      // remap OtherServices, ServiceUsers and Capacities if they are null rather than 0
+      if (thisEstablishment.OtherServices == 0 && thisEstablishment.OtherServicesSavedAt === null) {
+        thisEstablishment.OtherServices = -1;
+      }
+      if (thisEstablishment.ServiceUsers == 0 && thisEstablishment.ServiceUsersSavedAt === null) {
+        thisEstablishment.ServiceUsers = -1;
+      }
+      if (thisEstablishment.Capacities == 0 && thisEstablishment.CapacityServicesSavedAt === null) {
+        thisEstablishment.Capacities = -1;
+      }
+      if (thisEstablishment.LocalAuthorities == 0 && thisEstablishment.ShareDataSavedAt === null) {
+        thisEstablishment.LocalAuthorities = -1;
+      }
+
+      // now add a weighted completion value (between 0 and 100)
+      // the properties to check for are:
+      // 1. Number Of Staff
+      // 2. Employer Type
+      // 3. Other Services
+      // 3a. Note - don't have enough information to check for capacities
+      // 4. Service Users
+      // 5. ShareDat
+      // 6. Vacancies
+      // 7. Starters
+      // 8. Leavers
+      const totalPropertyCount = 8;
+      let weightedPropertyCount = 0;
+      if (thisEstablishment.NumberOfStaffSavedAt !== null) {
+        weightedPropertyCount++;
+      }
+      if (thisEstablishment.EmployerTypeSavedAt !== null) {
+        weightedPropertyCount++;
+      }
+      if (thisEstablishment.OtherServicesSavedAt !== null) {
+        weightedPropertyCount++;
+      }
+      if (thisEstablishment.ServiceUsersSavedAt !== null) {
+        weightedPropertyCount++;
+      }
+      if (thisEstablishment.ShareDataSavedAt !== null) {
+        weightedPropertyCount++;
+      }
+      if (thisEstablishment.VacanciesSavedAt !== null) {
+        weightedPropertyCount++;
+      }
+      if (thisEstablishment.StartersSavedAt !== null) {
+        weightedPropertyCount++;
+      }
+      if (thisEstablishment.LeaversSavedAt !== null) {
+        weightedPropertyCount++;
+      }
+      thisEstablishment.WeightedCompletion = Math.floor(weightedPropertyCount/totalPropertyCount*100);
       establishments.push(thisEstablishment);
     }
   });
@@ -21,12 +74,11 @@ const separateEstablishments = (allEstablishmentsAndWorkers, referenceServices) 
   return establishments;
 }
 
-export const dailySnapshotReportV2 = async (allEstablishmentsAndWorkers, referenceLookups) => {
+export const dailySnapshotReportV2 = async (establishments, workers, referenceLookups) => {
   console.log("Calling Version 2 of snapshot report")
-  const establishments = separateEstablishments(allEstablishmentsAndWorkers, referenceLookups.services);
   
   // remap the workers, which includes calculated CssR ID (the first letter on NMDS ID)
-  const workers = allEstablishmentsAndWorkers.map(thisWorker => {
+  const mappedWorkers = workers.map(thisWorker => {
     const newWorker = thisWorker;
 
     // dereference job
@@ -67,8 +119,13 @@ export const dailySnapshotReportV2 = async (allEstablishmentsAndWorkers, referen
       { id: 'NameValue', title: 'Name'},
       { id: 'IsRegulated', title: 'IsRegulated'},
       { id: 'PostCode', title: 'PostCode'},
+      { id: 'Eastings', title: 'Eastings'},
+      { id: 'Northings', title: 'Northings'},
+      { id: 'Latitude', title: 'Latitude'},
+      { id: 'Longitude', title: 'Longitude'},
       { id: 'EstablishmentCreated', title: 'EstablishmentCreated'},
       { id: 'EstablishmentUpdated', title: 'EstablishmentUpdated'},
+      { id: 'WeightedCompletion', title: 'WeightedCompletion'},
 
       // establishment properties
       { id: 'MainServiceFKValue', title: 'MainServiceByID'},
@@ -146,7 +203,7 @@ export const dailySnapshotReportV2 = async (allEstablishmentsAndWorkers, referen
   });
 
   const establishmentsCsv = establishmentCsvWriter.getHeaderString().concat(establishmentCsvWriter.stringifyRecords(establishments));
-  const workersCsv = workerCsvWriter.getHeaderString().concat(workerCsvWriter.stringifyRecords(workers));
+  const workersCsv = workerCsvWriter.getHeaderString().concat(workerCsvWriter.stringifyRecords(mappedWorkers));
 
   return {
     establishmentsCsv,
@@ -155,11 +212,9 @@ export const dailySnapshotReportV2 = async (allEstablishmentsAndWorkers, referen
 };
 
 
-export const dailySnapshotReportV3 = async (allEstablishmentsAndWorkers, referenceLookups) => {
-  const establishments = separateEstablishments(allEstablishmentsAndWorkers, referenceLookups.services);
-
+export const dailySnapshotReportV3 = async (establishments, workers, referenceLookups) => {
   // remap the workers, which includes calculated CssR ID (the first letter on NMDS ID)
-  const workers = allEstablishmentsAndWorkers.map(thisWorker => {
+  const mappedWorkers = workers.map(thisWorker => {
     const newWorker = thisWorker;
 
     // dereference job
@@ -199,8 +254,14 @@ export const dailySnapshotReportV3 = async (allEstablishmentsAndWorkers, referen
       { id: 'NameValue', title: 'Name'},
       { id: 'IsRegulated', title: 'IsRegulated'},
       { id: 'PostCode', title: 'PostCode'},
+      { id: 'Eastings', title: 'Eastings'},
+      { id: 'Northings', title: 'Northings'},
+      { id: 'Latitude', title: 'Latitude'},
+      { id: 'Longitude', title: 'Longitude'},
+
       { id: 'EstablishmentCreated', title: 'EstablishmentCreated'},
       { id: 'EstablishmentUpdated', title: 'EstablishmentUpdated'},
+      { id: 'WeightedCompletion', title: 'WeightedCompletion'},
 
       // WDF
       { id: 'OverallWdfEligibility', title: 'OverallWdfEligibility'},
@@ -285,7 +346,7 @@ export const dailySnapshotReportV3 = async (allEstablishmentsAndWorkers, referen
   });
 
   const establishmentsCsv = establishmentCsvWriter.getHeaderString().concat(establishmentCsvWriter.stringifyRecords(establishments));
-  const workersCsv = workerCsvWriter.getHeaderString().concat(workerCsvWriter.stringifyRecords(workers));
+  const workersCsv = workerCsvWriter.getHeaderString().concat(workerCsvWriter.stringifyRecords(mappedWorkers));
 
   return {
     establishmentsCsv,

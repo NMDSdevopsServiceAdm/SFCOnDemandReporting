@@ -1,4 +1,4 @@
-// this is simply to test sending emails via AWA SES
+// this is simply to send emails via AWS SES
 import AWS  from 'aws-sdk';
 import mailcomposer from 'mailcomposer';
 import { logInfo, logError } from '../common/logger';

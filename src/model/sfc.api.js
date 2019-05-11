@@ -31,14 +31,14 @@ export const allEstablishments = async (since=null) => {
                 Authorization: `Bearer ${myJwt}`
             }
         });
-        logTrace("sfc.api::allEstablishments API Response", apiResponse);
+        logTrace("sfc.api::allEstablishments API Response Status", apiResponse.status);
 
         const response = {
             endpoint: apiUrl,
             status: apiResponse.status,
-            establishments: apiResponse.data
+            workers: apiResponse.data
         };
-        logDebug("sfc.api::allEstablishments to return", response);
+        logDebug("sfc.api::allEstablishments to return # establishments", apiResponse.data.length);
 
         return response;
 

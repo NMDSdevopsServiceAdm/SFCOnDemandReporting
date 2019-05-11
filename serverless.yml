@@ -32,8 +32,13 @@ custom:
   DATA_VERSION:
     dev: 3
     staging: 3
-    preprod: 2
-    prod: 2
+    preprod: 3
+    prod: 3
+  S3_REPORTS_BUCKET:
+    dev: sfc-reports-buckets-dev
+    staging: sfc-reports-buckets-staging
+    preprod: sfc-reports-buckets-preprod
+    prod: sfc-reports-buckets-prod
 
 provider:
   name: aws
@@ -68,6 +73,8 @@ functions:
       EMAIL_SENDER: "${self:custom.EMAIL_SENDER.${self:provider.stage}}"
       EMAIL_RECIPIENT: "${self:custom.EMAIL_RECIPIENT.${self:provider.stage}}"
       DATA_VERSION: "${self:custom.DATA_VERSION.${self:provider.stage}}"
+      S3_REPORTS_BUCKET: "${self:custom.S3_REPORTS_BUCKET.${self:provider.stage}}"
+      SLACK_LEVEL: 3
     tags:
       application: "Reporting"
       function: "On Demand Reporting"
