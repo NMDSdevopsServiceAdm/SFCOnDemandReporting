@@ -30,10 +30,10 @@ custom:
     preprod: "sfcuat.cloudapps.digital"
     prod: "asc-wds.skillsforcare.org.uk"
   DATA_VERSION:
-    dev: 3
-    staging: 3
-    preprod: 3
-    prod: 3
+    dev: 4
+    staging: 4
+    preprod: 4
+    prod: 4
   S3_REPORTS_BUCKET:
     dev: sfc-reports-buckets-dev
     staging: sfc-reports-buckets-staging
