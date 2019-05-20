@@ -112,7 +112,15 @@ export const users = async (users) => {
         username: thisUser.Username,
         lastLoggedOn: thisUser.LastLoggedOn,
         lastChangedPassword: thisUser.LastChangedPassword,
+        NMDSID: thisUser.NmdsID,
+        EstablishmentID: thisUser.EstablishmentID,
+        Role: thisUser.UserRole,
+        EstablishmentName: thisUser.EstablishmentName,
+        IsPrimary: thisUser.IsPrimary
       };
+
+      console.log("WA DEBUG api body: ", apiBody)
+
       const apiResponse = await axios.post(
         USERS_ENDPOINT,
         apiBody,
