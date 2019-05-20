@@ -1,6 +1,6 @@
 'use strict';
 
-import { allEstablishments, myServices,  myJobs, myEthnicities, myCountries, myNationality, myRecruitmentSources, myQualifications } from '../model/sfc.api';
+import { allEstablishments, allUsers, myServices,  myJobs, myEthnicities, myCountries, myNationality, myRecruitmentSources, myQualifications } from '../model/sfc.api';
 import { logInfo, logError, logWarn, logTrace } from '../common/logger';
 import { slackInfo, uploadToSlack, slackError } from '../common/slack';
 import { initialiseSecrets } from '../aws/secrets';
@@ -9,6 +9,7 @@ import { initialiseS3, upload } from '../aws/s3';
 import { separateEstablishments, dailySnapshotReportV2, dailySnapshotReportV3 } from '../reports/dailySnapshot';
 import { resolveAllPostcodes } from '../model/postcode.api';
 import { findPostcode } from '../utils/findBy';
+import { login as strapi_login, establishments as strapi_establishments, users as strapi_users } from '../model/strapi';
 
 export const handler = async (event, context, callback) => {
   const arnList = (context.invokedFunctionArn).split(":");
@@ -45,6 +46,18 @@ export const handler = async (event, context, callback) => {
 
       // now separate the establishments from all the workers
       allEstablishmentsAndWorkersResponse.establishments = separateEstablishments(allEstablishmentsAndWorkersResponse.workers, lookups.services);
+
+      // strapi populate
+      const strAPiLogin = await strapi_login();
+      if (strAPiLogin) {
+        const myUsers = await allUsers();
+        //await strapi_establishments(allEstablishmentsAndWorkersResponse.establishments);
+        await strapi_users(myUsers.users);
+      }
+
+      console.log("Returning")
+
+      return;
 
       // now update all the Establishments with norhtings/eastings and latitude/longitude
       const allPostcodesToLookup = {};

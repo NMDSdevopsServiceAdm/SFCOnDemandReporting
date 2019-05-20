@@ -284,3 +284,41 @@ export const myQualifications = async () => {
             err.response && err.response.statusText ? err.response.statusText : 'undefined');
     }
 };
+
+export const allUsers = async (since=null) => {
+    const SFC_API_ENDPOINT = isLocalhostRegex.test(process.env.SFC_HOST)
+                                ? 'http://localhost:3000/api'
+                                :  `https://${process.env.SFC_HOST}/api`;
+    const SFC_GET_ALL_USERS = `${SFC_API_ENDPOINT}/reports/users`;
+
+    try {
+        logTrace("sfc.api::allUsers - About to call upon SfC API with url", SFC_GET_ALL_USERS);
+        const myJwt = reportingJWT();
+        const myParams= {};
+
+        const apiResponse = await axios.get(SFC_GET_ALL_USERS, {
+            params: myParams,
+            headers: {
+                Authorization: `Bearer ${myJwt}`
+            }
+        });
+        logTrace("sfc.api::allUsers API Response Status", apiResponse.status);
+
+        const response = {
+            endpoint: SFC_GET_ALL_USERS,
+            status: apiResponse.status,
+            users: apiResponse.data
+        };
+        logDebug("sfc.api::allUsers to return # ussers", apiResponse.data.length);
+
+        return response;
+
+    } catch (err) {
+        console.error(err)
+        return {
+            endpoint: SFC_GET_ALL_USERS,
+            status: err.response && err.response.status ? err.response.status : -1,
+            err: err.response && err.response.statusText ? err.response.statusText : 'undefined'
+        };
+    }
+};
