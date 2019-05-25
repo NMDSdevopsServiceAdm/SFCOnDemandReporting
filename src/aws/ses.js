@@ -26,10 +26,7 @@ export const sendByEmail = async (to, subject, htmlMessage, plainMessage) =>  {
           //   'EMAIL_ADDRESS',
           //   /* more items */
           // ],
-          ToAddresses: [
-            to,
-            /* more items */
-          ]
+          ToAddresses: to.split(';')
         },
         Message: { /* required */
           Body: { /* required */
