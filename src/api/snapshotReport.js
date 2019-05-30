@@ -6,7 +6,7 @@ import { slackInfo, uploadToSlack, slackError } from '../common/slack';
 import { initialiseSecrets } from '../aws/secrets';
 import { initialiseSES, sendByEmail } from '../aws/ses';
 import { initialiseS3, upload } from '../aws/s3';
-import { separateEstablishments, dailySnapshotReportV3,dailySnapshotReportV4 } from '../reports/dailySnapshot';
+import { separateEstablishments, dailySnapshotReportV4, dailySnapshotReportV5 } from '../reports/dailySnapshot';
 import { resolveAllPostcodes } from '../model/postcode.api';
 import { findPostcode } from '../utils/findBy';
 
@@ -81,27 +81,21 @@ export const handler = async (event, context, callback) => {
       let csv = null;
       logInfo(`Running daily snapshot report V${DataVersion}`);
       switch (DataVersion) {
-        case 2:
-          csv = await dailySnapshotReportV2(allEstablishmentsAndWorkersResponse.establishments,
-                                            allEstablishmentsAndWorkersResponse.workers,
-                                            lookups);
-          break;
-
-        case 3:   // WDF
-          csv = await dailySnapshotReportV3(allEstablishmentsAndWorkersResponse.establishments,
-                                            allEstablishmentsAndWorkersResponse.workers,
-                                            lookups);
-          break;
-
         case 4:   // parent/subs and Cohort 2 data migration (Tribal IDs)
           csv = await dailySnapshotReportV4(allEstablishmentsAndWorkersResponse.establishments,
                                             allEstablishmentsAndWorkersResponse.workers,
                                             lookups);
           break;
 
+        case 5:   // main service capcity/utilisatoin
+          csv = await dailySnapshotReportV5(allEstablishmentsAndWorkersResponse.establishments,
+                                            allEstablishmentsAndWorkersResponse.workers,
+                                            lookups);
+          break;
+
         default:
           csv = await dailySnapshotReportV3(allEstablishmentsAndWorkersResponse.establishments,
-                                            allEestablishmentsAndWorkersResponse.workers,
+                                            allEstablishmentsAndWorkersResponse.workers,
                                             lookups);
 
       }
