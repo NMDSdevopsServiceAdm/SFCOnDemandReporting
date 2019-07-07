@@ -15,10 +15,8 @@ export const handler = async (event, context) => {
 
   logInfo("registrations handler OK");
 
-  await slackInfo(`ASC WDS Registration`);
-
-  // slackTrace(slackTitle, event);
-
+  await slackInfo(JSON.stringify(event));
+  
   try {
 
   } catch (err) {
