@@ -2,7 +2,7 @@
 
 import { getSlackWebHook } from '../aws/secrets';
 import { logInfo, logError, logWarn, logTrace } from '../common/logger';
-import { slackInfo, uploadToSlack, slackError } from '../common/slack';
+import { slackInfo, slackFeedback } from '../common/slack';
 import { initialiseSecrets } from '../aws/secrets';
 
 export const handler = async (event, context) => {
@@ -15,7 +15,11 @@ export const handler = async (event, context) => {
 
   logInfo("feedback handler OK");
 
-  await slackInfo(`ASC WDS Feedback`);
+  const message = event.Records && event.Records[0] ? JSON.parse(event.Records[0].Sns.Message) : null;
+  console.log("WA DEBUG: event.Records[0].Sns.Message: ", message)
+  if (message) {
+    await slackFeedback(message);
+  }
   
   console.log("DEBUG event: ", event);
 

@@ -18,7 +18,7 @@ const SLACK_DISABLED=0;
 // posts the given "Slack formatted" message to the known inbound we
 const postToSlack = async (slackMsg) => {
     try {
-        const slackWebhook = await getSlackWebHook()
+        const slackWebhook = await getSlackWebHook();
         const apiResponse = await axios.post(
             slackWebhook,
             slackMsg,       // the data
@@ -166,3 +166,42 @@ export const uploadToSlack = async (slackMsg) => {
         logError("Failed to post to Slack: ", err);
     }
 }
+
+export const slackFeedback = async (message) => {
+    try {
+        await logToSlack(SLACK_INFO, {
+            text: `FEEDBACK`,
+            username: 'markdownbot',
+            markdwn: true,
+            attachments: [
+                {
+                    color: '#777777',
+                    fields: [
+                        {
+                            "title": "name",
+                            "value": message.name,
+                            "short": true
+                        },
+                        {
+                            "title": "email",
+                            "value": message.email,
+                            "short": true
+                        },
+                        {
+                            "title": "What",
+                            "value": message.doingWhat,
+                            "short": false
+                        },
+                        {
+                          "title": "Say",
+                          "value": message.tellUs,
+                          "short": false
+                        },
+                    ],                   
+                }
+            ]
+        });
+    } catch (err) {
+        console.error(err);
+    }
+};

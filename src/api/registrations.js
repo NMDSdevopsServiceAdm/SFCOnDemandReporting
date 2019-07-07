@@ -2,7 +2,7 @@
 
 import { getSlackWebHook } from '../aws/secrets';
 import { logInfo, logError, logWarn, logTrace } from '../common/logger';
-import { slackInfo, uploadToSlack, slackError } from '../common/slack';
+import { slackInfo } from '../common/slack';
 import { initialiseSecrets } from '../aws/secrets';
 
 export const handler = async (event, context) => {
