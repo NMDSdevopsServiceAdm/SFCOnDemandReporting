@@ -1,17 +1,23 @@
 'use strict';
 
-import { getSlackWebHookSecret } from '../aws/secrets';
+import { getSlackWebHook } from '../aws/secrets';
 import { logInfo, logError, logWarn, logTrace } from '../common/logger';
+import { slackInfo, uploadToSlack, slackError } from '../common/slack';
 import { initialiseSecrets } from '../aws/secrets';
 
 export const handler = async (event, context) => {
   var arnList = (context.invokedFunctionArn).split(":");
   var lambdaRegion = arnList[3];
-  //nitialiseSecrets(lambdaRegion);
+  //initialiseSecrets(lambdaRegion);
 
-  const slackTitle = 'SfC Establishment Pump';
-  
+  const webhook = getSlackWebHook();
+  console.log("DEBUG slack webhook: ", webhook)
+
   logInfo("feedback handler OK");
+
+  await slackInfo(`ASC WDS Feedback`);
+  
+  console.log("DEBUG event: ", event);
 
   // slackTrace(slackTitle, event);
 
