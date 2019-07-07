@@ -6,7 +6,7 @@ import { slackInfo, uploadToSlack, slackError } from '../common/slack';
 import { initialiseSecrets } from '../aws/secrets';
 import { initialiseSES, sendByEmail } from '../aws/ses';
 import { initialiseS3, upload } from '../aws/s3';
-import { separateEstablishments, dailySnapshotReportV4, dailySnapshotReportV5 } from '../reports/dailySnapshot';
+import { separateEstablishments, separateWorkers, dailySnapshotReportV5, dailySnapshotReportV6 } from '../reports/dailySnapshot';
 import { resolveAllPostcodes } from '../model/postcode.api';
 import { findPostcode } from '../utils/findBy';
 
@@ -45,6 +45,7 @@ export const handler = async (event, context, callback) => {
 
       // now separate the establishments from all the workers
       allEstablishmentsAndWorkersResponse.establishments = separateEstablishments(allEstablishmentsAndWorkersResponse.workers, lookups.services);
+      allEstablishmentsAndWorkersResponse.workers = separateWorkers(allEstablishmentsAndWorkersResponse.workers);
 
       // now update all the Establishments with norhtings/eastings and latitude/longitude
       const allPostcodesToLookup = {};
@@ -81,20 +82,20 @@ export const handler = async (event, context, callback) => {
       let csv = null;
       logInfo(`Running daily snapshot report V${DataVersion}`);
       switch (DataVersion) {
-        case 4:   // parent/subs and Cohort 2 data migration (Tribal IDs)
-          csv = await dailySnapshotReportV4(allEstablishmentsAndWorkersResponse.establishments,
-                                            allEstablishmentsAndWorkersResponse.workers,
-                                            lookups);
-          break;
-
         case 5:   // main service capcity/utilisatoin
           csv = await dailySnapshotReportV5(allEstablishmentsAndWorkersResponse.establishments,
                                             allEstablishmentsAndWorkersResponse.workers,
                                             lookups);
           break;
 
+        case 6: // bulk upload Establishment and Worker data source
+          csv = await dailySnapshotReportV6(allEstablishmentsAndWorkersResponse.establishments,
+                                            allEstablishmentsAndWorkersResponse.workers,
+                                            lookups);
+          break;
+
         default:
-          csv = await dailySnapshotReportV3(allEstablishmentsAndWorkersResponse.establishments,
+          csv = await dailySnapshotReportV5(allEstablishmentsAndWorkersResponse.establishments,
                                             allEstablishmentsAndWorkersResponse.workers,
                                             lookups);
 
