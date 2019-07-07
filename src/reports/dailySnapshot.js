@@ -29,13 +29,6 @@ export const separateEstablishments = (allEstablishmentsAndWorkers, referenceSer
         thisEstablishment.LocalAuthorities = -1;
       }
 
-      // rename utilisations/capacities for
-      const REMAP_SERVICE_UTILISATIONS_AND_CAPACITIES_FK = [20, 11, 23, 13];
-      if (REMAP_SERVICE_UTILISATIONS_AND_CAPACITIES_FK.includes(thisEstablishment.MainServiceFKValue)) {
-        thisEstablishment.MainServiceUtilisation = thisEstablishment.MainServiceCapacity;
-        thisEstablishment.MainServiceCapacity = null;
-      }
-
       // now add a weighted completion value (between 0 and 100)
       // the properties to check for are:
       // 1. Number Of Staff
