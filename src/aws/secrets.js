@@ -9,6 +9,7 @@ export const initialiseSecrets = async (lambdaRegion) => {
   });
 
   const SECRETS_STORE = process.env.STORE || null;
+
   if (SECRETS_STORE) {
     const mySecretsValue = await secrets.getSecretValue({SecretId: process.env.STORE}).promise();
 
@@ -18,11 +19,13 @@ export const initialiseSecrets = async (lambdaRegion) => {
       if (typeof mySecrets == 'undefined') {
         throw new Error('Unexpected Slack webhook');
       }
-  
+
       myLocalSecrets = {
         SLACK_URL: mySecrets.SLACK_URL,
         MONGO_DB_URI: mySecrets.MONGO_DB_URI,
         JWT_SECRET: mySecrets.JWT_SECRET,
+        REGISTRATION_SLACK_URL: mySecrets.REGISTRATION_SLACK_URL,
+        FEEDBACK_SLACK_URL: mySecrets.FEEDBACK_SLACK_URL,
       };
     }
   }
@@ -41,6 +44,30 @@ export const getSlackWebHook = () => {
     return myLocalSecrets.SLACK_URL;
   } else {
     throw new Error('Unknown Slack webhook secret');
+  }
+}
+
+export const getRegistrationSlackWebHook = () => {
+  if (process.env.REGISTRATION_SLACK_URL) {
+    return process.env.REGISTRATION_SLACK_URL;
+  }
+
+  if (myLocalSecrets !== null) {
+    return myLocalSecrets.REGISTRATION_SLACK_URL;
+  } else {
+    throw new Error('Unknown Registration Slack webhook secret');
+  }
+}
+
+export const getFeebdackSlackWebHook = () => {
+  if (process.env.FEEDBACK_SLACK_URL) {
+    return process.env.FEEDBACK_SLACK_URL;
+  }
+
+  if (myLocalSecrets !== null) {
+    return myLocalSecrets.FEEDBACK_SLACK_URL;
+  } else {
+    throw new Error('Unknown Feedback Slack webhook secret');
   }
 }
 

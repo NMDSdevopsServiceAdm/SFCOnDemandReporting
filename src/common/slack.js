@@ -6,7 +6,7 @@ import axios from 'axios';
 import FormData from 'form-data';
 import dateFormat from 'dateformat';
 import { logError, logWarn, logInfo, logTrace } from './logger';
-import { getSlackWebHook } from '../aws/secrets';
+import { getSlackWebHook, getRegistrationSlackWebHook, getFeebdackSlackWebHook } from '../aws/secrets';
 
 // log to console, if given level is less than equal to environment log level
 const SLACK_TRACE=5;
@@ -17,11 +17,11 @@ const SLACK_ERROR=1;
 const SLACK_DISABLED=0;
 
 // posts the given "Slack formatted" message to the known inbound we
-const postToSlack = async (slackMsg) => {
+const postToSlack = async (webhook, slackMsg) => {
     try {
-        const slackWebhook = await getSlackWebHook();
+        
         const apiResponse = await axios.post(
-            slackWebhook,
+            webhook,
             slackMsg,       // the data
             {
                 headers: {
@@ -40,7 +40,8 @@ const logToSlack = async (level, slackMsg) => {
     const ENV_LOG_LEVEL = process.env.SLACK_LEVEL || SLACK_DISABLED;
 
     if (level <= ENV_LOG_LEVEL) {
-        await postToSlack(slackMsg);
+        const slackWebhook = getSlackWebHook();
+        await postToSlack(slackWebhook, slackMsg);
     }
 };
 
@@ -170,7 +171,8 @@ export const uploadToSlack = async (slackMsg) => {
 
 export const slackFeedback = async (message) => {
     try {
-        await logToSlack(SLACK_INFO, {
+        const slackWebhook = getRegistrationSlackWebHook();
+        await postToSlack(slackWebhook, {
             text: `FEEDBACK`,
             username: 'markdownbot',
             markdwn: true,
@@ -210,7 +212,8 @@ export const slackFeedback = async (message) => {
 
 export const slackRegistration = async (message) => {
     try {
-        await logToSlack(SLACK_INFO, {
+        const slackWebhook = getRegistrationSlackWebHook();
+        await postToSlack(slackWebhook, {
             username: 'markdownbot',
             text: `REGISTRATION for approval`,
             attachments: [

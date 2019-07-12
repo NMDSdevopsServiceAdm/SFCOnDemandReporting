@@ -8,15 +8,9 @@ import { initialiseSecrets } from '../aws/secrets';
 export const handler = async (event, context) => {
   var arnList = (context.invokedFunctionArn).split(":");
   var lambdaRegion = arnList[3];
-  //initialiseSecrets(lambdaRegion);
-
-  const webhook = getSlackWebHook();
-  console.log("DEBUG slack webhook: ", webhook)
-
-  logInfo("feedback handler OK");
+  await initialiseSecrets(lambdaRegion);
 
   const message = event.Records && event.Records[0] ? JSON.parse(event.Records[0].Sns.Message) : null;
-  console.log("WA DEBUG: event.Records[0].Sns.Message: ", message)
   if (message) {
     await slackFeedback(message);
   }
