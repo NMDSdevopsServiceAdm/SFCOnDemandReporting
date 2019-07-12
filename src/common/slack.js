@@ -219,9 +219,19 @@ export const slackRegistration = async (message) => {
             attachments: [
               {
                 color: "good",
-                title: `Establishment = "${message.locationName}"`,
-                title_link: "https://sfcdev.cloudapps.digital/workplace/7r537t584748",
+                title: message.locationName,
+                title_link: `https://sfcdev.cloudapps.digital/workplace/${message.establishmentUid}`,
                 fields: [
+                    {
+                        title: "UID",
+                        value: message.establishmentUid,
+                        short: false
+                    },
+                    {
+                        title: "NMDS ID",
+                        value: message.nmdsId,
+                        short: false
+                    },
                     {
                         title: "Location ID",
                         value: message.isRegulated ? message.llocationId : 'non CQC',
@@ -240,19 +250,18 @@ export const slackRegistration = async (message) => {
                     {
                         title: "Main Service",
                         value: message.mainServiceOther ? message.mainServiceOther : message.mainService,
-                        short: true
+                        short: false
                     },
                 ],
               },
               {
                 color: "good",
-                text: message.locationName,
-                title: `User -  "${message.user.fullname}"`,
+                title: message.user.fullname,
                 fields: [
                     {
                         title: "Phone",
                         value: message.user.contactNumber,
-                        short: true
+                        short: false
                     },
                     {
                         title: "Username",
@@ -267,7 +276,7 @@ export const slackRegistration = async (message) => {
                     {
                         title: "Job Title",
                         value: message.user.jobTitle,
-                        short: true
+                        short: false
                     },
                 ],
               },
@@ -308,8 +317,7 @@ export const slackRegistration = async (message) => {
                 ],
               },
               {
-                text: uuid.v4(),
-                fallback: "You are unable to approve/reject",
+                fallback: message.establishmentUid,
                 callback_id: "registration",
                 color: "danger",
                 attachment_type: "default",
