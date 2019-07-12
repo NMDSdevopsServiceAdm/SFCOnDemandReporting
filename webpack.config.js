@@ -8,6 +8,8 @@ if (process.env.NODE_ENV === 'production') externals.push('aws-sdk');
   entry: {
     snapshotReport: ['babel-polyfill', './src/api/snapshotReport.js'],
     ingestEstablishments: ['babel-polyfill', './src/api/ingestEstablishments.js'],
+    registrations: ['babel-polyfill', './src/api/registrations.js'],
+    feedback: ['babel-polyfill', './src/api/feedback.js']
   },
   output: {
     path: path.resolve(__dirname, './lib'),

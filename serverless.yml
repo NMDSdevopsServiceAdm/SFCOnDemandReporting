@@ -103,6 +103,36 @@ functions:
     package:
       include:
         - ingestEstablishments.js
+  registrations:
+    handler: registrations.handler
+    memorySize: 128
+    timeout: 15
+    environment:
+      TOPIC: 'registrations.dev'
+      LOG_LEVEL: 3      # 0-disabled; 1-errors, 2-warnings, 3-info, 4-debug, 5-trace
+    events:
+    tags:
+      application: "Registrations"
+      function: "InternalAdmin"
+      company: "SfC"
+    package:
+      include:
+        - registrations.js
+  feedback:
+    handler: feedback.handler
+    memorySize: 128
+    timeout: 15
+    environment:
+      TOPIC: 'feedback.dev'
+      LOG_LEVEL: 3      # 0-disabled; 1-errors, 2-warnings, 3-info, 4-debug, 5-trace
+    events:
+    tags:
+      application: "Feedback"
+      function: "InternalAdmin"
+      company: "SfC"
+    package:
+      include:
+        - feedback.js
 plugins:
   - serverless-pseudo-parameters
   - serverless-plugin-include-dependencies

@@ -1,6 +1,7 @@
 // Slack is a great tool for comms. But not just between people. Applications can interact with Slack too.
 // Slack application integration allows not just for messaging, but well formatted messaging
 import util from 'util';
+import uuid from 'uuid';
 import axios from 'axios';
 import FormData from 'form-data';
 import dateFormat from 'dateformat';
@@ -18,7 +19,7 @@ const SLACK_DISABLED=0;
 // posts the given "Slack formatted" message to the known inbound we
 const postToSlack = async (slackMsg) => {
     try {
-        const slackWebhook = await getSlackWebHook()
+        const slackWebhook = await getSlackWebHook();
         const apiResponse = await axios.post(
             slackWebhook,
             slackMsg,       // the data
@@ -166,3 +167,183 @@ export const uploadToSlack = async (slackMsg) => {
         logError("Failed to post to Slack: ", err);
     }
 }
+
+export const slackFeedback = async (message) => {
+    try {
+        await logToSlack(SLACK_INFO, {
+            text: `FEEDBACK`,
+            username: 'markdownbot',
+            markdwn: true,
+            attachments: [
+                {
+                    color: '#777777',
+                    fields: [
+                        {
+                            "title": "name",
+                            "value": message.name,
+                            "short": true
+                        },
+                        {
+                            "title": "email",
+                            "value": message.email,
+                            "short": false
+                        },
+                        {
+                            "title": "What",
+                            "value": message.doingWhat,
+                            "short": false
+                        },
+                        {
+                          "title": "Say",
+                          "value": message.tellUs,
+                          "short": false
+                        },
+                    ],                   
+                }
+            ]
+        });
+    } catch (err) {
+        console.error(err);
+    }
+};
+
+
+export const slackRegistration = async (message) => {
+    try {
+        await logToSlack(SLACK_INFO, {
+            username: 'markdownbot',
+            text: `REGISTRATION for approval`,
+            attachments: [
+              {
+                color: "good",
+                title: `Establishment = "${message.locationName}"`,
+                title_link: "https://sfcdev.cloudapps.digital/workplace/7r537t584748",
+                fields: [
+                    {
+                        title: "Location ID",
+                        value: message.isRegulated ? message.llocationId : 'non CQC',
+                        short: true
+                    },
+                    {
+                        title: "Postcode",
+                        value: message.postalCode,
+                        short: true
+                    },
+                    {
+                        title: "Address",
+                        value: [message.addressLine1, message.addressLine2, message.townCity, message.county].filter(x => x !== null).join(','),
+                        short: false
+                    },
+                    {
+                        title: "Main Service",
+                        value: message.mainServiceOther ? message.mainServiceOther : message.mainService,
+                        short: true
+                    },
+                ],
+              },
+              {
+                color: "good",
+                text: message.locationName,
+                title: `User -  "${message.user.fullname}"`,
+                fields: [
+                    {
+                        title: "Phone",
+                        value: message.user.contactNumber,
+                        short: true
+                    },
+                    {
+                        title: "Username",
+                        value: message.user.username,
+                        short: false
+                    },
+                    {
+                        title: "Email",
+                        value: message.user.emailAddress,
+                        short: false
+                    },
+                    {
+                        title: "Job Title",
+                        value: message.user.jobTitle,
+                        short: true
+                    },
+                ],
+              },
+              {
+                color: "warning",
+                title: "1. Have Not and Want Not",
+                title_link: "https://sfcdev.cloudapps.digital/workplace/89248593585648",
+                // text: "Approved by aylingw",
+                fields: [
+                    {
+                        title: "NMDS ID",
+                        value: "H838598",
+                        short: true
+                    },
+                    {
+                      title: "Postcode",
+                      value: "SE19 3SS",
+                      short: true
+                    }
+                ],
+              },
+              {
+                color: "warning",
+                title: "2. Them and Us",
+                title_link: "https://sfcdev.cloudapps.digital/workplace/854e864893483",
+                // text: "Approved by aylingw",
+                fields: [
+                    {
+                        title: "NMDS ID",
+                        value: "C088958",
+                        short: true
+                    },
+                    {
+                      title: "Postcode",
+                      value: "HS6 7SS",
+                      short: true
+                    }
+                ],
+              },
+              {
+                text: uuid.v4(),
+                fallback: "You are unable to approve/reject",
+                callback_id: "registration",
+                color: "danger",
+                attachment_type: "default",
+                actions: [
+                  {
+                    name: "status",
+                    text: "Accept",
+                    type: "button",
+                    value: "accept",
+                    style: "primary",
+                  },
+                  {
+                      name: "status",
+                      text: "Reject",
+                      type: "select",
+                      options: [
+                        {
+                            "text": "Duplicate",
+                            "value": "Duplicated",
+                        },
+                        {
+                            "text": "Poppicot",
+                            "value": "Pure Poppicott",
+                        }
+                      ],
+                      confirm: {
+                        title: "Are you sure?",
+                        text: "Confirm to reject this registration?",
+                        ok_text: "Yes",
+                        dismiss_text: "No"
+                      },
+                  }
+                ]
+              },
+            ]
+          });
+    } catch (err) {
+        console.error(err);
+    }
+};
