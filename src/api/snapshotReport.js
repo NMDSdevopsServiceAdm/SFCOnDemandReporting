@@ -9,8 +9,9 @@ import { initialiseS3, upload } from '../aws/s3';
 import { separateEstablishments, separateWorkers, dailySnapshotReportV5, dailySnapshotReportV6 } from '../reports/dailySnapshot';
 import { resolveAllPostcodes } from '../model/postcode.api';
 import { findPostcode } from '../utils/findBy';
+import { login as strapi_login, establishments as strapi_establishments, users as strapi_users } from '../model/strapi';
 
-export const handler = async (event, context, callback) => {
+/* export const handler = async (event, context, callback) => {
   const arnList = (context.invokedFunctionArn).split(":");
   const lambdaRegion = arnList[3];
 
@@ -146,4 +147,77 @@ export const handler = async (event, context, callback) => {
     }
 
     return null;
+}; */
+
+export const handler = async (event, context, callback) => {
+  const arnList = (context.invokedFunctionArn).split(":");
+  const lambdaRegion = arnList[3];
+
+  const slackTitle = 'SfC Snapshot Report';
+
+  await initialiseSecrets(lambdaRegion);
+
+  const lookups = {};
+
+  // slackTrace(slackTitle, event);
+
+    let allEstablishmentsAndWorkersResponse = null;
+    try {
+      let DataVersion = 'latest';
+      if (process.env.DATA_VERSION) {
+        DataVersion = parseInt(process.env.DATA_VERSION, 10);
+      }
+
+      const strAPiLogin = await strapi_login();
+      console.log("WA DEBUG - strapi returned with: ", strAPiLogin)
+      if (!strAPiLogin) {
+        return false;
+      }
+
+      logInfo('Fetching list of estabishments by API');
+      allEstablishmentsAndWorkersResponse = await allEstablishments();
+
+      logInfo('Fetching reference lookups');
+      lookups.services = await myServices();
+      lookups.jobs = await myJobs();
+      lookups.ethnicities = await myEthnicities();
+      lookups.countries = await myCountries();
+      lookups.nationalities = await myNationality();
+      lookups.recruitmentSources = await myRecruitmentSources();
+      lookups.qualifications = await myQualifications();
+
+      // now separate the establishments from all the workers
+      allEstablishmentsAndWorkersResponse.establishments = separateEstablishments(allEstablishmentsAndWorkersResponse.workers, lookups.services);
+      allEstablishmentsAndWorkersResponse.workers = separateWorkers(allEstablishmentsAndWorkersResponse.workers);
+
+      // strapi populate
+      if (strAPiLogin) {
+        await strapi_establishments(allEstablishmentsAndWorkersResponse.establishments, 'local');
+        //const myUsers = await allUsers();
+        //await strapi_users(myUsers.users);
+      }
+     
+    } catch (err) {
+      // unable to get establishments
+      logError(err);
+      slackError(slackTitle, 'Unable to get SfC Establishments', err);
+      return 'Unable to get SfC Establishments';
+    }
+
+    if (allEstablishmentsAndWorkersResponse && ![200,201].includes(allEstablishmentsAndWorkersResponse.status)) {
+      logError('Error returning from SfC API: ', allEstablishmentsAndWorkersResponse);
+      slackError(slackError, 'Error returning from SfC API');
+      return 'SfC API unavailable';
+    }
+
+    // get this far with success and a set of next arrivals
+    if (allEstablishmentsAndWorkersResponse && allEstablishmentsAndWorkersResponse.establishments) {
+      const responseMsg = `Successfully processed ingested data to SFC Internal Admin`;
+      logInfo(responseMsg);
+
+      return 'Success';
+    }
+
+    return null;
 };
+
