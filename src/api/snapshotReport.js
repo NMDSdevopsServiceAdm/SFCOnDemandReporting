@@ -174,27 +174,33 @@ export const handler = async (event, context, callback) => {
         return false;
       }
 
-      logInfo('Fetching list of estabishments by API');
-      allEstablishmentsAndWorkersResponse = await allEstablishments();
+      const INGEST_WHAT = 'Users';  // or 'Establishments
 
-      logInfo('Fetching reference lookups');
-      lookups.services = await myServices();
-      lookups.jobs = await myJobs();
-      lookups.ethnicities = await myEthnicities();
-      lookups.countries = await myCountries();
-      lookups.nationalities = await myNationality();
-      lookups.recruitmentSources = await myRecruitmentSources();
-      lookups.qualifications = await myQualifications();
-
-      // now separate the establishments from all the workers
-      allEstablishmentsAndWorkersResponse.establishments = separateEstablishments(allEstablishmentsAndWorkersResponse.workers, lookups.services);
-      allEstablishmentsAndWorkersResponse.workers = separateWorkers(allEstablishmentsAndWorkersResponse.workers);
-
-      // strapi populate
-      if (strAPiLogin) {
-        await strapi_establishments(allEstablishmentsAndWorkersResponse.establishments, 'local');
+      if (INGEST_WHAT === 'Establishments') {
+        logInfo('Fetching list of estabishments by API');
+        allEstablishmentsAndWorkersResponse = await allEstablishments();
+  
+        logInfo('Fetching reference lookups');
+        lookups.services = await myServices();
+        lookups.jobs = await myJobs();
+  
+        // now separate the establishments from all the workers
+        allEstablishmentsAndWorkersResponse.establishments = separateEstablishments(allEstablishmentsAndWorkersResponse.workers, lookups.services);
+  
+        // strapi populate
+        if (strAPiLogin) {
+          await strapi_establishments(allEstablishmentsAndWorkersResponse.establishments, 'local');
+        }
+  
+      } else {
+        logInfo('Fetching list of Users by API');
         //const myUsers = await allUsers();
-        //await strapi_users(myUsers.users);
+        const allUsers = await allEstablishments();   // hijacking the all establishments view
+
+        // strapi populate
+        if (strAPiLogin) {
+          await strapi_users(allUsers.workers, 'local');
+        }
       }
      
     } catch (err) {

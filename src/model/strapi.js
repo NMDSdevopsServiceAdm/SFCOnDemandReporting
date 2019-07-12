@@ -118,7 +118,8 @@ export const establishments = async (establishments, dataSource = 'local') => {
           OverallWDFEligibility: thisEstablishment.OverallWdfEligibility,
           LastWDFEligible: thisEstablishment.EstablishmentLastWdfEligibility,
           EmployerType: mappedEmployerType,
-          URL: linkBaseUrl ? `${linkBaseUrl}/thisEstablishment.EstablishmentID}` : ''
+          URL: linkBaseUrl ? `${linkBaseUrl}/thisEstablishment.EstablishmentID}` : '',
+          LastUpdated: thisEstablishment.EstablishmentUpdated,
         };
 
         try {
@@ -147,7 +148,7 @@ export const establishments = async (establishments, dataSource = 'local') => {
 };
 
 
-export const users = async (users) => {
+export const users = async (users, dataSource = 'local') => {
   const USERS_ENDPOINT = `${API_ENDPOINT}/appusers`;
 
   if (API_JWT === null) {
@@ -159,40 +160,76 @@ export const users = async (users) => {
     return;
   }
 
+  let linkBaseUrl = null;
+  switch (dataSource) {
+    case 'local':
+      linkBaseUrl = 'http://localhost:3001/workplace/';
+      break;
+    case 'dev':
+      linkBaseUrl = 'https://sfcdev.cloudapps.digital/';
+      break;
+    case 'staging':
+      linkBaseUrl = 'https://sfcstaging.cloudapps.digital/';
+      break;
+    case 'production':
+      linkBaseUrl = 'https://asc-wds.skillsforcare.org.uk/';
+      break;
+  }
+
+  console.log("linkbaseurl", linkBaseUrl)
+  console.log("#users", users.length)
+
   try {
+    const MAX_COUNT=10000;
+    let currentCount = 0
+
     users.forEach(async thisUser => {
-      logTrace(`strapi::users - About to call upon STRPAI with url (${USERS_ENDPOINT}) on establishment with UID (${thisUser.EstablishmentUID})`);
+      currentCount++;
+      if (currentCount < MAX_COUNT) {
+        logInfo(`${currentCount} - strapi::users - About to call upon STRPAI with url (${USERS_ENDPOINT}) on establishment with UID (${thisUser.EstablishmentUID}) and Username (${thisUser.Username})`);
 
-      const apiBody = {
-        PK: thisUser.UserPK,
-        UID: thisUser.UserUID,
-        Name: thisUser.Name,
-        Phone: thisUser.Phone,
-        Email: thisUser.Email,
-        SecurityQuestion: thisUser.securityQeustion,
-        SecurityAnswer: thisUser.MainServiceValue,
-        username: thisUser.Username,
-        lastLoggedOn: thisUser.LastLoggedOn,
-        lastChangedPassword: thisUser.LastChangedPassword,
-        NMDSID: thisUser.NmdsID,
-        EstablishmentID: thisUser.EstablishmentID,
-        Role: thisUser.UserRole,
-        EstablishmentName: thisUser.EstablishmentName,
-        IsPrimary: thisUser.IsPrimary
-      };
+        const apiBody = {
+          DataSource: dataSource,
+          PK: thisUser.UserID,
+          UID: thisUser.UserUID,
+          Name: thisUser.FullName,
+          Phone: thisUser.Phone,
+          Email: thisUser.Email,
+          SecurityQuestion: thisUser.SecurityQuestion,
+          SecurityAnswer: thisUser.SecurityAnswer,
+          Role: thisUser.UserRole,
+          Username: thisUser.Username,
+          IsBlocked: !thisUser.IsActive,
+          LastLoggedIn: thisUser.LastLoggedIn,
+          PasswdLastChanged: thisUser.PasswdLastChanged,
+          Role: thisUser.UserRole,
+          IsPrimary: thisUser.IsPrimary,
+          LastUpdated: thisUser.LastUpdated,
+          EstablishmentUID: thisUser.EstablishmentUID,
+          EstablishmentName: thisUser.EstablishmentName,
+          NMDSID: thisUser.EstablishmentNDMSID,
+          Postcode: thisUser.EstablishmentPostcode,
+          URL: linkBaseUrl ? `${linkBaseUrl}/${thisUser.EstablishmentUID}` : '',
+        };
 
-      console.log("WA DEBUG api body: ", apiBody)
+        console.log("WA DEBUG api body: ", apiBody)
 
-      const apiResponse = await axios.post(
-        USERS_ENDPOINT,
-        apiBody,
-        {
-          headers: {
-              Authorization: `Bearer ${API_JWT}`
-          }
+        try {
+          const apiResponse = await axios.post(
+            USERS_ENDPOINT,
+            apiBody,
+            {
+              headers: {
+                  Authorization: `Bearer ${API_JWT}`
+              }
+            }
+          );
+          logTrace("strapi::users API Response Status", apiResponse.status);
+        } catch (err) {
+          logError("strapi::users API Response Status", err);
         }
-      );
-      logTrace("strapi::users API Response Status", apiResponse.status);
+      }
+
     });
 
     return true;
