@@ -171,7 +171,7 @@ export const uploadToSlack = async (slackMsg) => {
 
 export const slackFeedback = async (message) => {
     try {
-        const slackWebhook = getRegistrationSlackWebHook();
+        const slackWebhook = getFeebdackSlackWebHook();
         await postToSlack(slackWebhook, {
             text: `FEEDBACK`,
             username: 'markdownbot',
