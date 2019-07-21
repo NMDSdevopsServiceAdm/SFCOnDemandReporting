@@ -259,23 +259,23 @@ export const slackRegistration = async (message) => {
                 title: message.user.fullname,
                 fields: [
                     {
-                        title: "Phone",
-                        value: message.user.contactNumber,
-                        short: false
-                    },
-                    {
                         title: "Username",
                         value: message.user.username,
                         short: false
                     },
                     {
-                        title: "Email",
-                        value: message.user.emailAddress,
+                        title: "Job Title",
+                        value: message.user.jobTitle,
                         short: false
                     },
                     {
-                        title: "Job Title",
-                        value: message.user.jobTitle,
+                        title: "Phone",
+                        value: message.user.phone,
+                        short: false
+                    },
+                    {
+                        title: "Email",
+                        value: message.user.email,
                         short: false
                     },
                 ],
