@@ -108,9 +108,9 @@ functions:
     memorySize: 128
     timeout: 15
     environment:
-      TOPIC: 'registrations.dev'
       LOG_LEVEL: 3      # 0-disabled; 1-errors, 2-warnings, 3-info, 4-debug, 5-trace
     events:
+        - sns: arn:aws:sns:eu-west-1:364648107127:registrations-dev
     tags:
       application: "Registrations"
       function: "InternalAdmin"
@@ -123,9 +123,9 @@ functions:
     memorySize: 128
     timeout: 15
     environment:
-      TOPIC: 'feedback.dev'
       LOG_LEVEL: 3      # 0-disabled; 1-errors, 2-warnings, 3-info, 4-debug, 5-trace
     events:
+        - sns: arn:aws:sns:#{AWS::Region}:#{AWS::AccountId}:feedback-dev
     tags:
       application: "Feedback"
       function: "InternalAdmin"

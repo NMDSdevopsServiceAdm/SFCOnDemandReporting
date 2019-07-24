@@ -17,5 +17,6 @@ const runRegistration = async () => {
 }
 
 process.env.LOG_LEVEL = 5;
-process.env.SLACK_LEVEL = 0;
+process.env.SLACK_LEVEL = 3;
+process.env.SLACK_URL = 'https://hooks.slack.com/services/TBC';
 runRegistration();
