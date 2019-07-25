@@ -43,7 +43,9 @@ export const allEstablishments = async (since=null) => {
         return response;
 
     } catch (err) {
-        console.error(err)
+        // console.log(err)
+        const errorMsg = `status (${err.response.status}) : ${err.response.data}`;
+        console.error(errorMsg)
         return {
             endpoint: apiUrl,
             status: err.response && err.response.status ? err.response.status : -1,
@@ -59,6 +61,9 @@ const reportingJWT = () => {
         aud: 'ADS-WDS-on-demand-reporting',
         iss: process.env.SFC_HOST,
     }
+
+    console.log("WA DEBUG - reportingJWT::claims: ", claims)
+    console.log("WA DEBUG - reportingJWT::secret: ", jwtSecret())
 
     // 15 minute token
     return jwt.sign(JSON.parse(JSON.stringify(claims)), jwtSecret(), {expiresIn: '15m'});   
