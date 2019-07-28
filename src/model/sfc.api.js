@@ -38,7 +38,7 @@ export const allEstablishments = async (since=null) => {
             status: apiResponse.status,
             workers: apiResponse.data
         };
-        logDebug("sfc.api::allEstablishments to return # establishments", apiResponse.data.length);
+        logInfo("sfc.api::allEstablishments to return # establishments", apiResponse.data.length);
 
         return response;
 
@@ -59,7 +59,7 @@ const reportingJWT = () => {
         role: 'reporting',
         sub: 'ondemand-reporting',
         aud: 'ADS-WDS-on-demand-reporting',
-        iss: process.env.SFC_HOST,
+        iss: process.env.ISS,
     }
 
     console.log("WA DEBUG - reportingJWT::claims: ", claims)

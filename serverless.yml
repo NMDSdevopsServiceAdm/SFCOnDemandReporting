@@ -17,7 +17,7 @@ custom:
   EMAIL_RECIPIENT:
     dev: warren.ayling@wozitech-ltd.co.uk
     staging: ann.shepherd1@soprasteria.com
-    preprod: warren.ayling@wozitech-ltd.co.uk
+    preprod: warren.ayling@wozitech-ltd.co.uk;sarah.davison@skillsforcare.org.uk
     prod: david.griffiths@skillsforcare.org.uk;roy.price@skillsforcare.org.uk
   STORE:
     dev: "dev/ondemand/reporting"
@@ -27,12 +27,17 @@ custom:
   SFC_HOST:
     dev: "sfcdev.cloudapps.digital"
     staging: "sfcstaging.cloudapps.digital"
-    preprod: "sfcuat.cloudapps.digital"
+    preprod: "sfcuatgreen.cloudapps.digital"
+    prod: "asc-wds.skillsforcare.org.uk"
+  ISS:
+    dev: "sfcdev.cloudapps.digital"
+    staging: "sfcstaging.cloudapps.digital"
+    preprod: "asc-wds.skillsforcare.org.uk"
     prod: "asc-wds.skillsforcare.org.uk"
   DATA_VERSION:
-    dev: 6
-    staging: 6
-    preprod: 5
+    dev: 7
+    staging: 7
+    preprod: 7
     prod: 5
   S3_REPORTS_BUCKET:
     dev: sfc-reports-buckets-dev
@@ -66,9 +71,10 @@ functions:
   snapshotReport:
     handler: snapshotReport.handler
     memorySize: 512
-    timeout: 15
+    timeout: 120      # preprod and production runs will take longer to download from source, and then parse, format and upload to S3
     environment:
       SFC_HOST: "${self:custom.SFC_HOST.${self:provider.stage}}"
+      ISS: "${self:custom.ISS.${self:provider.stage}}"
       LOG_LEVEL: 3      # 0-disabled; 1-errors, 2-warnings, 3-info, 4-debug, 5-trace
       EMAIL_SENDER: "${self:custom.EMAIL_SENDER.${self:provider.stage}}"
       EMAIL_RECIPIENT: "${self:custom.EMAIL_RECIPIENT.${self:provider.stage}}"
