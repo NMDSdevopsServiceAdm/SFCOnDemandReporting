@@ -2,28 +2,24 @@
 
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
-import { logDebug, logTrace, logError } from '../common/logger';
+import { logDebug, logTrace, logError, logInfo } from '../common/logger';
 import { jwtSecret } from '../aws/secrets';
 
 const isLocalhostRegex = /^localhost$/;
 
-export const allEstablishments = async (since=null) => {
+export const allEstablishments = async (cssrId) => {
     const SFC_API_ENDPOINT = isLocalhostRegex.test(process.env.SFC_HOST)
                                 ? 'http://localhost:3000/api'
                                 :  `https://${process.env.SFC_HOST}/api`;
     const SFC_GET_ALL_ESTABLISHMENTS = `${SFC_API_ENDPOINT}/reports/dailySnapshot`;
-    const apiUrl = since
-        ? `${SFC_GET_ALL_ESTABLISHMENTS}/since?${since.toISOString()}`
+    const apiUrl = cssrId
+        ? `${SFC_GET_ALL_ESTABLISHMENTS}?cssrId=${cssrId}`
         : `${SFC_GET_ALL_ESTABLISHMENTS}`;
 
     try {
         logTrace("sfc.api::allEstablishments - About to call upon SfC API with url", apiUrl);
         const myJwt = reportingJWT();
         const myParams= {};
-
-        if (since) {
-            myParams.since = new Date(since);
-        }
 
         const apiResponse = await axios.get(apiUrl, {
             params: myParams,
@@ -43,7 +39,7 @@ export const allEstablishments = async (since=null) => {
         return response;
 
     } catch (err) {
-        // console.log(err)
+        console.log(err)
         const errorMsg = `status (${err.response.status}) : ${err.response.data}`;
         console.error(errorMsg)
         return {
@@ -61,9 +57,6 @@ const reportingJWT = () => {
         aud: 'ADS-WDS-on-demand-reporting',
         iss: process.env.ISS,
     }
-
-    console.log("WA DEBUG - reportingJWT::claims: ", claims)
-    console.log("WA DEBUG - reportingJWT::secret: ", jwtSecret())
 
     // 15 minute token
     return jwt.sign(JSON.parse(JSON.stringify(claims)), jwtSecret(), {expiresIn: '15m'});   
