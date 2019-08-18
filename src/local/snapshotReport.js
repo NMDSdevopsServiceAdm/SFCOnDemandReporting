@@ -4,7 +4,7 @@ const runReport = async () => {
     try {
         const returnVal = await myReport.handler(
             {
-                cssrId: 'W'
+                //cssrId: 'W'
             },
             { invokedFunctionArn : 'arn:aws:lambda:eu-west-1:accountid:function:sfc-ondemand-reporting-snapshot-report' },
         );
