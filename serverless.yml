@@ -89,7 +89,8 @@ functions:
     environment:
       STREAM: 'establishments.dev'
       LOG_LEVEL: 3      # 0-disabled; 1-errors, 2-warnings, 3-info, 4-debug, 5-trace
-      #MONGO_DB_URI: ${env:MONGO_DB_URI}
+      EMAIL_SENDER: "${self:custom.EMAIL_SENDER.${self:provider.stage}}"
+      EMAIL_RECIPIENT: "${self:custom.EMAIL_RECIPIENT.${self:provider.stage}}"
     events:
       - stream:
           type: kinesis

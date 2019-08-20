@@ -15,8 +15,6 @@ export const handler = async (event, context) => {
     await slackFeedback(message);
   }
   
-  console.log("DEBUG event: ", event);
-
   // slackTrace(slackTitle, event);
 
   try {

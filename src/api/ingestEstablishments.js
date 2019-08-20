@@ -3,7 +3,8 @@
 import { MongoClient } from 'mongodb';
 import { getSlackWebHookSecret } from '../aws/secrets';
 import { logInfo, logError, logWarn, logTrace } from '../common/logger';
-import { initialiseSecrets } from '../aws/secrets';
+import { initialiseSecrets, getMongoDBUrl } from '../aws/secrets';
+import { initialiseSES, sendByEmail } from '../aws/ses';
 
 /* Example input:
  * 
@@ -36,16 +37,22 @@ export const handler = async (event, context) => {
 
   const slackTitle = 'SfC Establishment Pump';
 
-  //initialiseSecrets(lambdaRegion);
+  await initialiseSecrets(lambdaRegion);
+  await initialiseSES(lambdaRegion, process.env.EMAIL_SENDER);
 
   // slackTrace(slackTitle, event);
 
   const establishments = {};
+  let streamName = null;
   try {
     // by initiating lambda from a Kinesis Stream, the records are added to event
-    event.Records.forEach(function(record) {
+    event.Records.forEach(record => {
       // Kinesis data is base64 encoded so decode here
       const payload = Buffer.from(record.kinesis.data, 'base64').toString('ascii');
+      streamName = record.eventSourceARN;
+
+      // DEBUG ONLY
+      logInfo(`Payload: ${payload}`);
 
       let jsonPayload = null;
       try {
@@ -84,38 +91,47 @@ export const handler = async (event, context) => {
   const establishmentKeys = Object.keys(establishments);
   logInfo(slackTitle, "All establishments: ", establishmentKeys.length);
 
-  // now having a unique set of Establishments, can upsert them into Mongo collection
-  const mongoDbUrl = process.env.MONGO_DB_URI;
+  if (establishmentKeys.length > 0) {
+    // now having a unique set of Establishments, can upsert them into Mongo collection
+    const mongoDbUrl = getMongoDBUrl();
 
-  try {
-    const dbClient = await MongoClient.connect(mongoDbUrl, { useNewUrlParser: true });
-    const db = dbClient.db('Demo');
+    console.log("WA DEBUG - mongodb url: ", mongoDbUrl)
 
-    const upsertPromises = [];
+    try {
+      const dbClient = await MongoClient.connect(mongoDbUrl, { useNewUrlParser: true });
+      const db = dbClient.db('sfc');
 
-    establishmentKeys.forEach(thisEstUID => {
-      upsertPromises.push(
-        db.collection('establishments').update(
-          { uid: thisEstUID },
-          establishments[thisEstUID],
-          {
-            upsert: true,
-          }
-        )
-      );
-    });
+      const upsertPromises = [];
 
-    await Promise.all(upsertPromises);
+      establishmentKeys.forEach(thisEstUID => {
+        upsertPromises.push(
+          db.collection('establishments').update(
+            { uid: thisEstUID },
+            establishments[thisEstUID],
+            {
+              upsert: true,
+            }
+          )
+        );
+      });
 
-    const responseMsg = `Successfully retrieved Establishments: ${establishmentKeys.join(',')}`;
-    logInfo(responseMsg);
-  
-    dbClient.close();
+      await Promise.all(upsertPromises);
 
-    return true;  
-
-  } catch (err) {
-    logError(err);
-    return false;
+      const responseMsg = `Successfully processed Establishments from ${streamName}: ${establishmentKeys.join(',')}`;
+      logInfo(responseMsg);
+      await sendByEmail(
+        process.env.EMAIL_RECIPIENT,
+        `Successfully processed Establishments from ${streamName}`,
+        `<htm><body>${establishmentKeys.join(',')}</body><html>`,
+        `${establishmentKeys.join(',')}`);
+    
+      dbClient.close();
+    } catch (err) {
+      logError(err);
+      return false;
+    }
   }
-};
+  
+  return true;  
+
+ };

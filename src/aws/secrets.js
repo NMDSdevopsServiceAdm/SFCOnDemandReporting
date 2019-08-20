@@ -11,13 +11,13 @@ export const initialiseSecrets = async (lambdaRegion) => {
   const SECRETS_STORE = process.env.STORE || null;
 
   if (SECRETS_STORE) {
-    const mySecretsValue = await secrets.getSecretValue({SecretId: process.env.STORE}).promise();
+    const mySecretsValue = await secrets.getSecretValue({SecretId: SECRETS_STORE}).promise();
 
     if (typeof mySecretsValue.SecretString !== 'undefined') {
       const mySecrets = JSON.parse(mySecretsValue.SecretString);
   
       if (typeof mySecrets == 'undefined') {
-        throw new Error('Unexpected Slack webhook');
+        throw new Error('Unexpected fecth of AWS Secreet Manager wallet');
       }
 
       myLocalSecrets = {
@@ -71,7 +71,7 @@ export const getFeebdackSlackWebHook = () => {
   }
 }
 
-export const mongoDBUrl = () => {
+export const getMongoDBUrl = () => {
   if (process.env.MONGO_DB_URI) {
     return process.env.MONGO_DB_URI;
   }

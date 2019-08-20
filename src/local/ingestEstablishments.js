@@ -44,6 +44,11 @@ const runIngest = async () => {
     }
 }
 
-process.env.LOG_LEVEL = 5;
+process.env.LOG_LEVEL = 3;
 process.env.SLACK_LEVEL = 0;
+process.env.STORE = 'dev/ondemand/reporting';
+process.env.EMAIL_SENDER = 'warren.ayling@wozitech-ltd.co.uk';
+process.env.EMAIL_RECIPIENT = 'warren.ayling@wozitech-ltd.co.uk';
 runIngest();
+
+console.log("End of")
