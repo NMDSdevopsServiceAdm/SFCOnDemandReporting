@@ -119,11 +119,11 @@ export const handler = async (event, context) => {
 
       const responseMsg = `Successfully processed Establishments from ${streamName}: ${establishmentKeys.join(',')}`;
       logInfo(responseMsg);
-      await sendByEmail(
-        process.env.EMAIL_RECIPIENT,
-        `Successfully processed Establishments from ${streamName}`,
-        `<htm><body>${establishmentKeys.join(',')}</body><html>`,
-        `${establishmentKeys.join(',')}`);
+      // await sendByEmail(
+      //   process.env.EMAIL_RECIPIENT,
+      //   `Successfully processed Establishments from ${streamName}`,
+      //   `<htm><body>${establishmentKeys.join(',')}</body><html>`,
+      //   `${establishmentKeys.join(',')}`);
     
       dbClient.close();
     } catch (err) {
